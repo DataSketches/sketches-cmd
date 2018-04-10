@@ -1,0 +1,2 @@
+#!/bin/bash
+java -jar homebrew-sketches-cmd-0.1.0-SNAPSHOT-with-shaded-core.jar $@
