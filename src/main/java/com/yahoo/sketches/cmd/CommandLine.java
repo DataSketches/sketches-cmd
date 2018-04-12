@@ -8,6 +8,7 @@ package com.yahoo.sketches.cmd;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -24,8 +25,8 @@ import org.apache.commons.cli.ParseException;
  * Command line access to the basic sketch functions. This is intentionally a very simple parser
  * with limited functionality that can be used for small experiments and for demos.
  *
- * <p>Although the sketching library can be used on a single machine, the more typical use case is on
- * large, highly distributed system architectures where command line access is not of much use.
+ * <p>Although the sketching library can be used on a single machine, the more typical use case is
+ * on large, highly distributed system architectures where command line access is not of much use.
  *
  * <p>After cloning or forking this repository do a <i>mvn clean package</i> and then move the
  * <i>sketches-cmd-x.y.z-SNAPSHOT-with-shaded-core.jar</i> to the root of your install
@@ -110,6 +111,9 @@ public abstract class CommandLine<T> {
   }
 
   protected void saveCurrentSketch() {
+      final String fname = cmd.getOptionValue("o");
+      final File file = new File(fname);
+      if (file.exists()) { file.delete(); }
       try (FileOutputStream out = new FileOutputStream(cmd.getOptionValue("o"))) {
         out.write(serializeSketch(sketches.get(sketches.size() - 1)));
       } catch (final IOException e) {
@@ -269,7 +273,7 @@ public abstract class CommandLine<T> {
     sb.append(BOLD + "NAME" + OFF).append(LS);
     sb.append("  ds              ");
     sb.append("This command-line application provides sketches for uniques,").append(LS);
-    sb.append(sp18 + "distributions (quantiles, cdf, pdf), frequent items,").append(LS);
+    sb.append(sp18 + "distributions (quantiles, ranks, cdf, pdf), frequent items,").append(LS);
     sb.append(sp18 + "and sampling of uniform and weighted items.").append(LS);
     sb.append(sp18 + "For more information refer to https://datasketches.github.io.").append(LS + LS);
 
@@ -289,7 +293,9 @@ public abstract class CommandLine<T> {
     sb.append("Frequency sketch for finding the heavy hitter objects from a stream of").append(LS);
     sb.append(sp18 + "integer weighted items. This sketch accumulates the weights keyed on the items.")
         .append(LS);
-    sb.append(sp18 + "The default is each line is a single item with an assumed weight of 1.")
+    sb.append(sp18 + "The default file format is each line is a single item with an assumed "
+        + "weight of 1.").append(LS);
+    sb.append(sp18 + "Output with no options is all No False Positives with estimate frequencies.")
         .append(LS + LS);
 
     sb.append("  ds hll          ");
@@ -298,6 +304,8 @@ public abstract class CommandLine<T> {
 
     sb.append("  ds quant        ");
     sb.append("Quantiles sketch for estimating distributions from a stream of numeric values.")
+        .append(LS);
+    sb.append(sp18 + "Output with no options is deciles.")
         .append(LS + LS);
 
     sb.append("  ds rsamp        ");
@@ -313,8 +321,8 @@ public abstract class CommandLine<T> {
         .append(LS);
     sb.append(sp18 + "into max k samples. This sketch does not accumulate weights of identical items.")
         .append(LS);
-    sb.append(sp18 + "The default is each line is a single item with an assumed weight of 1.0.")
-        .append(LS);
+    sb.append(sp18 + "The default file format is each line is a single item with an assumed "
+        + "weight of 1.0.").append(LS);
 
     println(sb.toString());
   }

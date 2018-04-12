@@ -75,6 +75,8 @@ import com.yahoo.sketches.quantiles.UpdateDoublesSketch;
           .build());
       options.addOption(Option.builder("lh")
           .longOpt("query-loghistogram")
+          .hasArg()
+          .argName("Zero Substitution")
           .desc("query log scale histogram")
           .build());
     }
@@ -137,8 +139,16 @@ import com.yahoo.sketches.quantiles.UpdateDoublesSketch;
   protected void queryCurrentSketch() {
     if (sketches.size() > 0) {
       final UpdateDoublesSketch sketch = sketches.get(sketches.size() - 1);
+      boolean optionChosen = false;
+
+      if (cmd.hasOption("m")) {
+        optionChosen = true;
+        final String median = String.format("%.2f", sketch.getQuantile(0.5));
+        println(median);
+      }
 
       if (cmd.hasOption("h")) {
+        optionChosen = true;
         int splitPoints = DEFAULT_NUM_BINS - 1;
         if (cmd.hasOption("b")) {
           splitPoints = Integer.parseInt(cmd.getOptionValue("b")) - 1;
@@ -146,7 +156,7 @@ import com.yahoo.sketches.quantiles.UpdateDoublesSketch;
         final long n = sketch.getN();
         final double[] splitsArr = getEvenSplits(sketch, splitPoints);
         final double[] histArr = sketch.getPMF(splitsArr);
-        println("Value" + TAB + "Freq");
+        println("\nValue" + TAB + "Freq");
         final double min = sketch.getMinValue();
         String splitVal = String.format("%,f", min);
         String freqVal = String.format("%,d", (long)(histArr[0] * n));
@@ -156,18 +166,19 @@ import com.yahoo.sketches.quantiles.UpdateDoublesSketch;
           freqVal = String.format("%,d", (long)(histArr[i + 1] * n));
           println(splitVal + TAB + freqVal);
         }
-        return;
       }
 
       if (cmd.hasOption("lh")) {
+        optionChosen = true;
+        final double zeroSub = Double.parseDouble(cmd.getOptionValue("lh"));
         int splitPoints = DEFAULT_NUM_BINS - 1;
         if (cmd.hasOption("b")) {
           splitPoints = Integer.parseInt(cmd.getOptionValue("b")) - 1;
         }
         final long n = sketch.getN();
-        final double[] splitsArr = getLogSplits(sketch, splitPoints);
+        final double[] splitsArr = getLogSplits(sketch, splitPoints, zeroSub);
         final double[] histArr = sketch.getPMF(splitsArr);
-        println("Value" + TAB + "Freq");
+        println("\nValue" + TAB + "Freq");
         final double min = sketch.getMinValue();
         String splitVal = String.format("%,f", min);
         String freqVal = String.format("%,d", (long)(histArr[0] * n));
@@ -177,62 +188,60 @@ import com.yahoo.sketches.quantiles.UpdateDoublesSketch;
           freqVal = String.format("%,d", (long)(histArr[i + 1] * n));
           println(splitVal + TAB + freqVal);
         }
-        return;
-      }
-
-      if (cmd.hasOption("m")) {
-          final String median = String.format("%.2f", sketch.getQuantile(0.5));
-          println(median);
-        return;
       }
 
       if (cmd.hasOption("R")) {
+        optionChosen = true;
+        println("\nRank + TAB + Value");
         final String[] items = cmd.getOptionValues("R");
         for (int i = 0; i < items.length; i++) {
           final String quant = String.format("%.2f", sketch.getQuantile(Double.parseDouble(items[i])));
           println(items[i] + TAB + quant);
         }
-        return;
       }
 
       if (cmd.hasOption("r")) {
+        optionChosen = true;
         final String[] items = queryFileReader(cmd.getOptionValue("r"));
-        println("Rank" + TAB + "Value");
+        println("\nRank" + TAB + "Value");
         for (String item: items) {
             final String quant = String.format("%.2f", sketch.getQuantile(Double.parseDouble(item)));
             println(item + TAB + quant);
         }
-        return;
       }
 
       if (cmd.hasOption("V")) {
+        optionChosen = true;
         final String[] items = cmd.getOptionValues("V");
         final double[] valuesArray = Arrays.stream(items).mapToDouble(Double::parseDouble).toArray();
         Arrays.sort(valuesArray);
         final double[] cdf =  sketch.getCDF(valuesArray);
+        println("\nValue" + TAB + "Rank");
         for (int i = 0; i < valuesArray.length ; i++) {
           println(String.format("%.2f", valuesArray[i]) + TAB + String.format("%.6f",cdf[i]));
         }
-        return;
       }
 
       if (cmd.hasOption("v")) {
+        optionChosen = true;
         final String[] items = queryFileReader(cmd.getOptionValue("v"));
         final double[] valuesArray = Arrays.stream(items).mapToDouble(Double::parseDouble).toArray();
         final double[] cdf =  sketch.getCDF(valuesArray);
+        println("\nValue" + TAB + "Rank");
         for (int i = 0; i < valuesArray.length ; i++) {
           println(String.format("%.2f", valuesArray[i]) + TAB + String.format("%.6f",cdf[i]));
         }
-        return;
       }
 
-      // deciles by default
-      println("Rank" + TAB + "Value");
-      for (int i = 0; i <= 10; i++) {
-        final double rank = (double) i / 10;
-        println(String.format("%.1f", rank) + TAB + sketch.getQuantile(rank));
+      // print deciles if no option chosen
+      if (!optionChosen) {
+        final double[] ranks = new double[] {0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0};
+        println("\nRank" + TAB + "Value");
+        final double[] values = sketch.getQuantiles(ranks);
+        for (int i = 0; i < values.length; i++) {
+          println(String.format("%.1f", ranks[i]) + TAB + values[i]);
+        }
       }
-      return;
     }
   }
 
@@ -242,8 +251,14 @@ import com.yahoo.sketches.quantiles.UpdateDoublesSketch;
     return getSplits(min, max, splitPoints);
   }
 
-  private static double[] getLogSplits(final DoublesSketch sketch, final int splitPoints) {
-    final double min = sketch.getMinValue();
+  private static double[] getLogSplits(final DoublesSketch sketch, final int splitPoints,
+      final double zeroSub) {
+    double min = sketch.getMinValue();
+    min = (min == 0) ? zeroSub : min;
+    if (min < 0) {
+      throw new IllegalArgumentException(
+          "Log Histogram cannot be produced with negative values in the stream.");
+    }
     final double max = sketch.getMaxValue();
     final double logMin = log10(min);
     final double logMax = log10(max);

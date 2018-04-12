@@ -8,7 +8,7 @@
  * http://www.eclipse.org/org/documents/epl-v10.php.</p>
  */
 
-package com.yahoo.sketches.cmd;
+package com.yahoo.sketches;
 
 import java.util.Arrays;
 

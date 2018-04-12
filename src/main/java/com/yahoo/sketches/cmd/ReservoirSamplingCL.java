@@ -82,6 +82,7 @@ public class ReservoirSamplingCL extends CommandLine<ReservoirItemsSketch<Long>>
   protected void queryCurrentSketch() {
     final ReservoirItemsSketch<Long>  sketch =  sketches.get(sketches.size() - 1);
     final Long[] samples = sketch.getSamples();
+    println("\nUniform Samples");
     for (int i = 0; i < samples.length; i++) {
         System.out.println(samples[i]);
     }

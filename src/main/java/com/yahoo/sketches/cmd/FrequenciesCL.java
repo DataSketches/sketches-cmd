@@ -29,7 +29,19 @@ import com.yahoo.sketches.frequencies.ItemsSketch;
       // output options
       options.addOption(Option.builder("t")
           .longOpt("topk-ids")
-          .desc("query identities for top k frequent items")
+          .desc("query just identities for most frequent items")
+          .build());
+      options.addOption(Option.builder("T")
+          .longOpt("topk-ids-with-freq")
+          .desc("query identities for most frequent items & frequencies")
+          .build());
+      options.addOption(Option.builder("e")
+          .longOpt("error-offset")
+          .desc("query maximum error offset")
+          .build());
+      options.addOption(Option.builder("n")
+          .longOpt("stream-length")
+          .desc("query stream length")
           .build());
       options.addOption(Option.builder("F")
           .longOpt("id2freq")
@@ -123,21 +135,48 @@ import com.yahoo.sketches.frequencies.ItemsSketch;
 
   @Override
   protected void queryCurrentSketch() {
-    final ItemsSketch<String> sketch = sketches.get(sketches.size() - 1);
+    if (sketches.size() > 0) {
+      final ItemsSketch<String> sketch = sketches.get(sketches.size() - 1);
+      boolean optionChosen = false;
+
+      if (cmd.hasOption("e")) {
+        optionChosen = true;
+        final String errOff = Long.toString(sketch.getMaximumError());
+        println("Max Error Offset: " + errOff);
+      }
+
+      if (cmd.hasOption("n")) {
+        optionChosen = true;
+        final String n = Long.toString(sketch.getStreamLength());
+        println("Stream Length   : " + n);
+      }
 
       if (cmd.hasOption("t")) {
+        optionChosen = true;
         final ItemsSketch.Row<String>[] rowArr =
             sketch.getFrequentItems(ErrorType.NO_FALSE_POSITIVES);
+        println("\nItems");
         for (int i = 0; i < rowArr.length; i++) {
           println(rowArr[i].getItem());
         }
-        return;
+      }
+
+      if (cmd.hasOption("T")) {
+        optionChosen = true;
+        final ItemsSketch.Row<String>[] rowArr =
+            sketch.getFrequentItems(ErrorType.NO_FALSE_POSITIVES);
+        println("\nItems" + TAB + "Frequency");
+        for (int i = 0; i < rowArr.length; i++) {
+          println(rowArr[i].getItem() + TAB + rowArr[i].getEstimate());
+        }
       }
 
       if (cmd.hasOption("F")) {
+        optionChosen = true;
         final ItemsSketch.Row<String>[] rowArr =
             sketch.getFrequentItems(ErrorType.NO_FALSE_POSITIVES);
         final String[] items = cmd.getOptionValues("F");
+        println("\nItems" + TAB + "Frequency");
         for (int i = 0; i < items.length; i++) {
           long freq = 0;
           for (int j = 0; j < rowArr.length; j++) {
@@ -147,13 +186,14 @@ import com.yahoo.sketches.frequencies.ItemsSketch;
           }
           println(items[i] + TAB + freq);
         }
-        return;
       }
 
       if (cmd.hasOption("f")) {
+        optionChosen = true;
         final ItemsSketch.Row<String>[] rowArr =
             sketch.getFrequentItems(ErrorType.NO_FALSE_POSITIVES);
         final String[] items = queryFileReader(cmd.getOptionValue("f"));
+        println("\nItems" + TAB + "Frequency");
         for (int i = 0; i < items.length; i++) {
           long freq = 0;
           for (int j = 0; j < rowArr.length; j++) {
@@ -163,16 +203,18 @@ import com.yahoo.sketches.frequencies.ItemsSketch;
           }
           println(items[i] + TAB + freq);
         }
-        return;
       }
 
-      //default output just topK items with frequencies
-      final ItemsSketch.Row<String>[] rowArr =
-          sketch.getFrequentItems(ErrorType.NO_FALSE_POSITIVES);
-      for (int i = 0; i < rowArr.length; i++) {
-        println(rowArr[i].getItem() + TAB + rowArr[i].getEstimate());
+      //print NO_FALSE_POSITIVES item & freq estimate if no option chosen
+      if (!optionChosen) {
+        final ItemsSketch.Row<String>[] rowArr =
+            sketch.getFrequentItems(ErrorType.NO_FALSE_POSITIVES);
+        println("\nItems" + TAB + "Frequency");
+        for (int i = 0; i < rowArr.length; i++) {
+          println(rowArr[i].getItem() + TAB + rowArr[i].getEstimate());
+        }
       }
-      return;
+    }
   }
 
 }
