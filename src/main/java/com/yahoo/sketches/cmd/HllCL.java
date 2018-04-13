@@ -11,7 +11,7 @@ import com.yahoo.sketches.hll.HllSketch;
 import com.yahoo.sketches.hll.TgtHllType;
 import com.yahoo.sketches.hll.Union;
 
-public class HllCL extends CommandLine<HllSketch> {
+public class HllCL extends SketchCommandLineParser<HllSketch> {
 
   private static final int DEFAULT_LG_K = 12;
 
@@ -34,8 +34,8 @@ public class HllCL extends CommandLine<HllSketch> {
   @Override
   protected void buildSketch() {
     final HllSketch sketch;
-    if (cmd.hasOption("lgk")) {
-      sketch =  new HllSketch(Integer.parseInt(cmd.getOptionValue("lgk"))); // user defined lgK
+    if (cl.hasOption("lgk")) {
+      sketch =  new HllSketch(Integer.parseInt(cl.getOptionValue("lgk"))); // user defined lgK
     } else {
       sketch =  new HllSketch(DEFAULT_LG_K);
     }
@@ -68,7 +68,7 @@ public class HllCL extends CommandLine<HllSketch> {
 
   @Override
   protected void mergeSketches() {
-    final int lgk = cmd.hasOption("k") ? Integer.parseInt(cmd.getOptionValue("lgk")) : DEFAULT_LG_K;
+    final int lgk = cl.hasOption("k") ? Integer.parseInt(cl.getOptionValue("lgk")) : DEFAULT_LG_K;
     final Union union = new Union(lgk);
     for (HllSketch sketch: sketches) {
       union.update(sketch);

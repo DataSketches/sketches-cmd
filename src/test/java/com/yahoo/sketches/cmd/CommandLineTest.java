@@ -22,6 +22,7 @@ public class CommandLineTest {
   String ranksFileName = "ranks.txt";
   String valuesFileName = "values.txt";
   String freqDataFileName = "freqData.txt";
+  String freqQueryFileName = "freqQuery.txt";
   String serFileName1 = "ser1.bin";
   String serFileName2 = "ser2.bin";
 
@@ -29,31 +30,37 @@ public class CommandLineTest {
   @Test  //enable/disable here for visual checking
   public void outputHelp() {
     String[] line = new String[] {""};
-    CommandLine.main(line);
+    SketchCommandLineParser.main(line);
 
     println("");
     line = new String[] {"freq", "-help"};
-    CommandLine.main(line);
+    SketchCommandLineParser.main(line);
 
     println("");
     line = new String[] {"hll", "-help"};
-    CommandLine.main(line);
+    SketchCommandLineParser.main(line);
 
     println("");
     line = new String[] {"quant", "-help"};
-    CommandLine.main(line);
+    SketchCommandLineParser.main(line);
 
     println("");
     line = new String[] {"rsamp", "-help"};
-    CommandLine.main(line);
+    SketchCommandLineParser.main(line);
 
     println("");
     line = new String[] {"theta", "-help"};
-    CommandLine.main(line);
+    SketchCommandLineParser.main(line);
 
     println("");
     line = new String[] {"vsamp", "-help"};
-    CommandLine.main(line);
+    SketchCommandLineParser.main(line);
+  }
+
+  @Test
+  public void outputManual() {
+    String[] line = new String[] {"man"};
+    SketchCommandLineParser.main(line);
   }
 
   @AfterClass
@@ -63,6 +70,7 @@ public class CommandLineTest {
     deleteFile(ranksFileName);
     deleteFile(valuesFileName);
     deleteFile(freqDataFileName);
+    deleteFile(freqQueryFileName);
     deleteFile(serFileName1);
     deleteFile(serFileName2);
   }
@@ -156,9 +164,22 @@ public class CommandLineTest {
     println("Creating Data Files...");
 
     createFreqDataFile(freqDataFileName);
+    createFreqQueryFile(freqQueryFileName);
 
-    println("\nUpdating Freq Items Sketch 1.");
+    println("\nUpdating Freq Items Sketch 1, print error, N, top ids, top ids + freq.");
     callMain("freq -k 256 -w -e -n -t -T -d " + freqDataFileName + " -o " + serFileName1);
+
+    println("\nUpdating Freq Items Sketch 2, default output.");
+    callMain("freq -k 256 -w -d " + freqDataFileName + " -o " + serFileName2);
+
+    println("\nMerge Freq Items Sketches 1 & 2, default output.");
+    callMain("freq -k 256 -s " + serFileName1 + " " + serFileName2);
+
+    println("\nQuery specific item frequencies from Sketch 1");
+    callMain("freq -k 256 -s " + serFileName1 + " -F 19976 19977 20000");
+
+    println("\nQuery specific item frequencies from Sketch 1 from file");
+    callMain("freq -k 256 -s " + serFileName1 + " -f " +  freqQueryFileName);
   }
 
   //TEST Reservoir Samples
@@ -179,6 +200,8 @@ public class CommandLineTest {
     println("\nMerge Reservior Sketch 1 and 2 with summary");
     callMain("rsamp -k 25 -p -s " + serFileName1 + " " + serFileName2);
   }
+
+
 
   private static void createUniquesFile(int start, int len, String fileName) {
     File file = new File(fileName);
@@ -215,9 +238,17 @@ public class CommandLineTest {
     }
   }
 
+  private static void createFreqQueryFile(String fileName) {
+    File file = new File(fileName);
+    if (file.exists()) { return; }
+    for (int i = 19976; i <= 20000; i++) {
+      appendStringToFile(i + LS, fileName);
+    }
+  }
+
   private static void callMain(String s) {
     String[] cl = s.split(" +");
-    CommandLine.main(cl);
+    SketchCommandLineParser.main(cl);
   }
 
   private static void deleteFile(String fileName) {

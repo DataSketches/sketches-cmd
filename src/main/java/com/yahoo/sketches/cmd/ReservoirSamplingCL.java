@@ -12,7 +12,7 @@ import com.yahoo.sketches.sampling.ReservoirItemsSketch;
 import com.yahoo.sketches.sampling.ReservoirItemsUnion;
 
 
-public class ReservoirSamplingCL extends CommandLine<ReservoirItemsSketch<Long>> {
+public class ReservoirSamplingCL extends SketchCommandLineParser<ReservoirItemsSketch<Long>> {
   ReservoirSamplingCL() {
     super();
     // input options
@@ -34,9 +34,9 @@ public class ReservoirSamplingCL extends CommandLine<ReservoirItemsSketch<Long>>
   @Override
   protected void buildSketch() {
     final ReservoirItemsSketch<Long> sketch;
-    if (cmd.hasOption("k")) {
+    if (cl.hasOption("k")) {
       sketch = //user defined k
-          ReservoirItemsSketch.newInstance(Integer.parseInt(cmd.getOptionValue("k")));
+          ReservoirItemsSketch.newInstance(Integer.parseInt(cl.getOptionValue("k")));
     } else {
       sketch = ReservoirItemsSketch.newInstance(32); // default k is 32
     }

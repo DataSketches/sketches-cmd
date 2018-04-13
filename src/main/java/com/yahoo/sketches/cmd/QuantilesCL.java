@@ -23,7 +23,7 @@ import com.yahoo.sketches.quantiles.DoublesUnion;
 import com.yahoo.sketches.quantiles.DoublesUnionBuilder;
 import com.yahoo.sketches.quantiles.UpdateDoublesSketch;
 
-  public class QuantilesCL extends CommandLine<UpdateDoublesSketch> {
+  public class QuantilesCL extends SketchCommandLineParser<UpdateDoublesSketch> {
 
     private static final int DEFAULT_NUM_BINS = 10;
 
@@ -91,8 +91,8 @@ import com.yahoo.sketches.quantiles.UpdateDoublesSketch;
   @Override
   protected void buildSketch() {
     final DoublesSketchBuilder builder = DoublesSketch.builder();
-    if (cmd.hasOption("k")) {
-      builder.setK(Integer.parseInt(cmd.getOptionValue("k")));
+    if (cl.hasOption("k")) {
+      builder.setK(Integer.parseInt(cl.getOptionValue("k")));
     }
     sketches.add(builder.build());
   }
@@ -125,8 +125,8 @@ import com.yahoo.sketches.quantiles.UpdateDoublesSketch;
   @Override
   protected void mergeSketches() {
     final DoublesUnionBuilder builder = DoublesUnion.builder();
-    if (cmd.hasOption("k")) {
-      builder.setMaxK(Integer.parseInt(cmd.getOptionValue("k")));
+    if (cl.hasOption("k")) {
+      builder.setMaxK(Integer.parseInt(cl.getOptionValue("k")));
     }
     final DoublesUnion union = builder.build();
     for (UpdateDoublesSketch sketch: sketches) {
@@ -141,17 +141,17 @@ import com.yahoo.sketches.quantiles.UpdateDoublesSketch;
       final UpdateDoublesSketch sketch = sketches.get(sketches.size() - 1);
       boolean optionChosen = false;
 
-      if (cmd.hasOption("m")) {
+      if (cl.hasOption("m")) {
         optionChosen = true;
         final String median = String.format("%.2f", sketch.getQuantile(0.5));
         println(median);
       }
 
-      if (cmd.hasOption("h")) {
+      if (cl.hasOption("h")) {
         optionChosen = true;
         int splitPoints = DEFAULT_NUM_BINS - 1;
-        if (cmd.hasOption("b")) {
-          splitPoints = Integer.parseInt(cmd.getOptionValue("b")) - 1;
+        if (cl.hasOption("b")) {
+          splitPoints = Integer.parseInt(cl.getOptionValue("b")) - 1;
         }
         final long n = sketch.getN();
         final double[] splitsArr = getEvenSplits(sketch, splitPoints);
@@ -168,12 +168,12 @@ import com.yahoo.sketches.quantiles.UpdateDoublesSketch;
         }
       }
 
-      if (cmd.hasOption("lh")) {
+      if (cl.hasOption("lh")) {
         optionChosen = true;
-        final double zeroSub = Double.parseDouble(cmd.getOptionValue("lh"));
+        final double zeroSub = Double.parseDouble(cl.getOptionValue("lh"));
         int splitPoints = DEFAULT_NUM_BINS - 1;
-        if (cmd.hasOption("b")) {
-          splitPoints = Integer.parseInt(cmd.getOptionValue("b")) - 1;
+        if (cl.hasOption("b")) {
+          splitPoints = Integer.parseInt(cl.getOptionValue("b")) - 1;
         }
         final long n = sketch.getN();
         final double[] splitsArr = getLogSplits(sketch, splitPoints, zeroSub);
@@ -190,30 +190,31 @@ import com.yahoo.sketches.quantiles.UpdateDoublesSketch;
         }
       }
 
-      if (cmd.hasOption("R")) {
+      if (cl.hasOption("R")) { //multiple ranks from the command line
         optionChosen = true;
         println("\nRank + TAB + Value");
-        final String[] items = cmd.getOptionValues("R");
-        for (int i = 0; i < items.length; i++) {
-          final String quant = String.format("%.2f", sketch.getQuantile(Double.parseDouble(items[i])));
-          println(items[i] + TAB + quant);
-        }
-      }
-
-      if (cmd.hasOption("r")) {
-        optionChosen = true;
-        final String[] items = queryFileReader(cmd.getOptionValue("r"));
+        final String[] ranks = cl.getOptionValues("R");
         println("\nRank" + TAB + "Value");
-        for (String item: items) {
-            final String quant = String.format("%.2f", sketch.getQuantile(Double.parseDouble(item)));
-            println(item + TAB + quant);
+        for (String rank : ranks) {
+          final String quant = String.format("%.2f", sketch.getQuantile(Double.parseDouble(rank)));
+          println(rank + TAB + quant);
         }
       }
 
-      if (cmd.hasOption("V")) {
+      if (cl.hasOption("r")) { //multiple ranks from a file
         optionChosen = true;
-        final String[] items = cmd.getOptionValues("V");
-        final double[] valuesArray = Arrays.stream(items).mapToDouble(Double::parseDouble).toArray();
+        final String[] ranks = queryFileReader(cl.getOptionValue("r"));
+        println("\nRank" + TAB + "Value");
+        for (String rank: ranks) {
+            final String quant = String.format("%.2f", sketch.getQuantile(Double.parseDouble(rank)));
+            println(rank + TAB + quant);
+        }
+      }
+
+      if (cl.hasOption("V")) {
+        optionChosen = true;
+        final String[] values = cl.getOptionValues("V");
+        final double[] valuesArray = Arrays.stream(values).mapToDouble(Double::parseDouble).toArray();
         Arrays.sort(valuesArray);
         final double[] cdf =  sketch.getCDF(valuesArray);
         println("\nValue" + TAB + "Rank");
@@ -222,9 +223,9 @@ import com.yahoo.sketches.quantiles.UpdateDoublesSketch;
         }
       }
 
-      if (cmd.hasOption("v")) {
+      if (cl.hasOption("v")) {
         optionChosen = true;
-        final String[] items = queryFileReader(cmd.getOptionValue("v"));
+        final String[] items = queryFileReader(cl.getOptionValue("v"));
         final double[] valuesArray = Arrays.stream(items).mapToDouble(Double::parseDouble).toArray();
         final double[] cdf =  sketch.getCDF(valuesArray);
         println("\nValue" + TAB + "Rank");

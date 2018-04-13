@@ -9,7 +9,7 @@ import org.apache.commons.cli.Option;
 import com.yahoo.sketches.sampling.VarOptItemsSamples;
 import com.yahoo.sketches.sampling.VarOptItemsSketch;
 
-public class VarOptSamplingCL extends CommandLine<VarOptItemsSketch<String>> {
+public class VarOptSamplingCL extends SketchCommandLineParser<VarOptItemsSketch<String>> {
   VarOptSamplingCL() {
     super();
     // input options
@@ -35,8 +35,8 @@ public class VarOptSamplingCL extends CommandLine<VarOptItemsSketch<String>> {
   @Override
   protected void buildSketch() {
     final VarOptItemsSketch<String> sketch;
-    if (cmd.hasOption("k")) { // user defined k
-      sketch = VarOptItemsSketch.newInstance(Integer.parseInt(cmd.getOptionValue("k")));
+    if (cl.hasOption("k")) { // user defined k
+      sketch = VarOptItemsSketch.newInstance(Integer.parseInt(cl.getOptionValue("k")));
     } else {
       sketch = VarOptItemsSketch.newInstance(32); // default k is 32
     }
@@ -48,7 +48,7 @@ public class VarOptSamplingCL extends CommandLine<VarOptItemsSketch<String>> {
     final VarOptItemsSketch<String> sketch = sketches.get(sketches.size() - 1);
     String itemStr = "";
     try {
-      if (cmd.hasOption("w")) {
+      if (cl.hasOption("w")) {
         while ((itemStr = br.readLine()) != null) {
           if (itemStr.isEmpty()) { continue; }
           final String[] tokens = itemStr.split("[\\t, ]+", 2);

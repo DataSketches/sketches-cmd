@@ -17,7 +17,7 @@ import com.yahoo.sketches.theta.Union;
 import com.yahoo.sketches.theta.UpdateSketch;
 import com.yahoo.sketches.theta.UpdateSketchBuilder;
 
-public class ThetaCL extends CommandLine<Sketch> {
+public class ThetaCL extends SketchCommandLineParser<Sketch> {
    protected UpdateSketch updateSketch;
 
    ThetaCL() {
@@ -49,8 +49,8 @@ public class ThetaCL extends CommandLine<Sketch> {
   @Override
   protected void buildSketch() {
     final UpdateSketchBuilder bldr = Sketches.updateSketchBuilder();
-    if (cmd.hasOption("k")) {
-      bldr.setNominalEntries(Integer.parseInt(cmd.getOptionValue("k")));  // user defined k
+    if (cl.hasOption("k")) {
+      bldr.setNominalEntries(Integer.parseInt(cl.getOptionValue("k")));  // user defined k
     }
     updateSketch = bldr.build();
   }
@@ -92,7 +92,7 @@ public class ThetaCL extends CommandLine<Sketch> {
 
   @Override
   protected void mergeSketches() {
-      if (cmd.hasOption("i")) {
+      if (cl.hasOption("i")) {
         final Intersection intersection = SetOperation.builder().buildIntersection();
         for (Sketch sketch: sketches) {
           intersection.update(sketch);
@@ -101,7 +101,7 @@ public class ThetaCL extends CommandLine<Sketch> {
         return;
       }
 
-      if (cmd.hasOption("m")) {
+      if (cl.hasOption("m")) {
         final Union union = SetOperation.builder().buildUnion();
         for (int i = 1; i < sketches.size(); i++) {
           union.update(sketches.get(i));
@@ -115,8 +115,8 @@ public class ThetaCL extends CommandLine<Sketch> {
 
       // default merge is union
       final SetOperationBuilder builder = SetOperation.builder();
-      if (cmd.hasOption("k")) { // user defined k
-        builder.setNominalEntries(Integer.parseInt(cmd.getOptionValue("k")));
+      if (cl.hasOption("k")) { // user defined k
+        builder.setNominalEntries(Integer.parseInt(cl.getOptionValue("k")));
       }
       final Union union = builder.buildUnion();
       for (Sketch sketch: sketches) {

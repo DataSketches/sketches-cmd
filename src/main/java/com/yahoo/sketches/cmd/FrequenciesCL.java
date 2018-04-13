@@ -14,7 +14,7 @@ import com.yahoo.sketches.frequencies.ErrorType;
 import com.yahoo.sketches.frequencies.ItemsSketch;
 
 
-  public class FrequenciesCL extends CommandLine<ItemsSketch<String>> {
+  public class FrequenciesCL extends SketchCommandLineParser<ItemsSketch<String>> {
 
     private static final int DEFAULT_SIZE = 1024;
 
@@ -33,7 +33,7 @@ import com.yahoo.sketches.frequencies.ItemsSketch;
           .build());
       options.addOption(Option.builder("T")
           .longOpt("topk-ids-with-freq")
-          .desc("query identities for most frequent items & frequencies")
+          .desc("query identities & frequencies for most frequent items")
           .build());
       options.addOption(Option.builder("e")
           .longOpt("error-offset")
@@ -70,12 +70,11 @@ import com.yahoo.sketches.frequencies.ItemsSketch;
         helpf.printHelp("ds freq", options);
   }
 
-
   @Override
   protected void buildSketch() {
     final ItemsSketch<String> sketch;
-    if (cmd.hasOption("k")) { //user defined k
-      sketch = new ItemsSketch<>(Integer.parseInt(cmd.getOptionValue("k")));
+    if (cl.hasOption("k")) { //user defined k
+      sketch = new ItemsSketch<>(Integer.parseInt(cl.getOptionValue("k")));
     } else { //default k
       sketch = new ItemsSketch<>(DEFAULT_SIZE);
     }
@@ -87,7 +86,7 @@ import com.yahoo.sketches.frequencies.ItemsSketch;
     final ItemsSketch<String> sketch = sketches.get(sketches.size() - 1);
     String itemStr = "";
     try {
-      if (cmd.hasOption("w")) {
+      if (cl.hasOption("w")) {
         while ((itemStr = br.readLine()) != null) {
           if (itemStr.isEmpty()) { continue; }
           final String[] tokens = itemStr.split("[\\t, ]+", 2);
@@ -122,8 +121,8 @@ import com.yahoo.sketches.frequencies.ItemsSketch;
   @Override
   protected void mergeSketches() {
     final ItemsSketch<String> union;
-    if (cmd.hasOption("k")) { //user defined k
-      union = new ItemsSketch<>(Integer.parseInt(cmd.getOptionValue("k")));
+    if (cl.hasOption("k")) { //user defined k
+      union = new ItemsSketch<>(Integer.parseInt(cl.getOptionValue("k")));
     } else { //default k
       union = new ItemsSketch<>(DEFAULT_SIZE);
     }
@@ -139,19 +138,19 @@ import com.yahoo.sketches.frequencies.ItemsSketch;
       final ItemsSketch<String> sketch = sketches.get(sketches.size() - 1);
       boolean optionChosen = false;
 
-      if (cmd.hasOption("e")) {
+      if (cl.hasOption("e")) {
         optionChosen = true;
         final String errOff = Long.toString(sketch.getMaximumError());
         println("Max Error Offset: " + errOff);
       }
 
-      if (cmd.hasOption("n")) {
+      if (cl.hasOption("n")) {
         optionChosen = true;
         final String n = Long.toString(sketch.getStreamLength());
         println("Stream Length   : " + n);
       }
 
-      if (cmd.hasOption("t")) {
+      if (cl.hasOption("t")) {
         optionChosen = true;
         final ItemsSketch.Row<String>[] rowArr =
             sketch.getFrequentItems(ErrorType.NO_FALSE_POSITIVES);
@@ -161,7 +160,7 @@ import com.yahoo.sketches.frequencies.ItemsSketch;
         }
       }
 
-      if (cmd.hasOption("T")) {
+      if (cl.hasOption("T")) {
         optionChosen = true;
         final ItemsSketch.Row<String>[] rowArr =
             sketch.getFrequentItems(ErrorType.NO_FALSE_POSITIVES);
@@ -171,11 +170,11 @@ import com.yahoo.sketches.frequencies.ItemsSketch;
         }
       }
 
-      if (cmd.hasOption("F")) {
+      if (cl.hasOption("F")) {
         optionChosen = true;
         final ItemsSketch.Row<String>[] rowArr =
             sketch.getFrequentItems(ErrorType.NO_FALSE_POSITIVES);
-        final String[] items = cmd.getOptionValues("F");
+        final String[] items = cl.getOptionValues("F");
         println("\nItems" + TAB + "Frequency");
         for (int i = 0; i < items.length; i++) {
           long freq = 0;
@@ -188,11 +187,11 @@ import com.yahoo.sketches.frequencies.ItemsSketch;
         }
       }
 
-      if (cmd.hasOption("f")) {
+      if (cl.hasOption("f")) {
         optionChosen = true;
         final ItemsSketch.Row<String>[] rowArr =
             sketch.getFrequentItems(ErrorType.NO_FALSE_POSITIVES);
-        final String[] items = queryFileReader(cmd.getOptionValue("f"));
+        final String[] items = queryFileReader(cl.getOptionValue("f"));
         println("\nItems" + TAB + "Frequency");
         for (int i = 0; i < items.length; i++) {
           long freq = 0;
