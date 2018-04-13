@@ -27,7 +27,7 @@ public class CommandLineTest {
   String serFileName2 = "ser2.bin";
 
 
-  @Test  //enable/disable here for visual checking
+  //@Test  //enable/disable here for visual checking
   public void outputHelp() {
     String[] line = new String[] {""};
     SketchCommandLineParser.main(line);
@@ -57,7 +57,7 @@ public class CommandLineTest {
     SketchCommandLineParser.main(line);
   }
 
-  @Test
+  //@Test
   public void outputManual() {
     String[] line = new String[] {"man"};
     SketchCommandLineParser.main(line);
@@ -80,6 +80,7 @@ public class CommandLineTest {
   public void checkTheta() {
     deleteFile(serFileName1);
     deleteFile(serFileName2);
+    println("\nCHECK THETA");
     println("Creating Data Files...");
 
     createUniquesFile(1, 20000, dataFileName1);
@@ -105,6 +106,7 @@ public class CommandLineTest {
   public void checkHll() {
     deleteFile(serFileName1);
     deleteFile(serFileName2);
+    println("\nCHECK HLL");
     println("Creating Data Files...");
 
     createUniquesFile(0, 20000, dataFileName1);
@@ -125,6 +127,7 @@ public class CommandLineTest {
   public void checkQuantiles() {
     deleteFile(serFileName1);
     deleteFile(serFileName2);
+    println("\nCHECK QUANTILES");
     println("Creating Data Files...");
 
     createUniquesFile(0, 20000, dataFileName1);
@@ -161,6 +164,7 @@ public class CommandLineTest {
   public void checkFreqItems() {
     deleteFile(serFileName1);
     deleteFile(serFileName2);
+    println("\nCHECK FREQUENT ITEMS");
     println("Creating Data Files...");
 
     createFreqDataFile(freqDataFileName);
@@ -187,6 +191,7 @@ public class CommandLineTest {
   public void checkReservior() {
     deleteFile(serFileName1);
     deleteFile(serFileName2);
+    println("\nCHECK RESERVIOR");
     println("Creating Data Files...");
 
     createUniquesFile(0, 20000, dataFileName1);
@@ -201,7 +206,14 @@ public class CommandLineTest {
     callMain("rsamp -k 25 -p -s " + serFileName1 + " " + serFileName2);
   }
 
-
+  //TEST VarOpt
+  @Test
+  public void checkVarOpt() {
+    deleteFile(serFileName1);
+    deleteFile(serFileName2);
+    println("\nCHECK VAROPT");
+    println("Creating Data Files...");
+  }
 
   private static void createUniquesFile(int start, int len, String fileName) {
     File file = new File(fileName);
@@ -247,6 +259,7 @@ public class CommandLineTest {
   }
 
   private static void callMain(String s) {
+    println("> " + s);
     String[] cl = s.split(" +");
     SketchCommandLineParser.main(cl);
   }
