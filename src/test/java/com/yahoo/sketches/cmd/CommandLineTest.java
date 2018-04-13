@@ -212,6 +212,17 @@ public class CommandLineTest {
     deleteFile(serFileName2);
     println("\nCHECK VAROPT");
     println("Creating Data Files...");
+
+    createFreqDataFile(freqDataFileName);
+
+    println("\nUpdating VarOpt Items Sketch 1: n, m, samples");
+    callMain("vsamp -k 64 -w -n -m -d " + freqDataFileName + " -o " + serFileName1);
+
+    println("\nUpdating VarOpt Items Sketch 2: samples");
+    callMain("vsamp -k 64 -w -d " + freqDataFileName + " -o " + serFileName2);
+
+    println("\nMerge VarOpt Sketch 1 and 2 with summary");
+    callMain("vsamp -k 64 -p -s " + serFileName1 + " " + serFileName2);
   }
 
   private static void createUniquesFile(int start, int len, String fileName) {

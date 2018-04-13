@@ -1,13 +1,18 @@
 package com.yahoo.sketches.cmd;
 
+import static com.yahoo.sketches.Util.TAB;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 
+import com.yahoo.memory.Memory;
+import com.yahoo.sketches.ArrayOfStringsSerDe;
 import com.yahoo.sketches.sampling.VarOptItemsSamples;
 import com.yahoo.sketches.sampling.VarOptItemsSketch;
+import com.yahoo.sketches.sampling.VarOptItemsUnion;
 
 public class VarOptSamplingCL extends SketchCommandLineParser<VarOptItemsSketch<String>> {
   VarOptSamplingCL() {
@@ -16,6 +21,14 @@ public class VarOptSamplingCL extends SketchCommandLineParser<VarOptItemsSketch<
     options.addOption(Option.builder("k")
         .desc("parameter k")
         .hasArg()
+        .build());
+    options.addOption(Option.builder("n")
+        .longOpt("stream-length")
+        .desc("query stream length")
+        .build());
+    options.addOption(Option.builder("m")
+        .longOpt("num-samples")
+        .desc("query number of samples retained")
         .build());
     options.addOption(Option.builder("w")
         .desc("Each line is two tokens separated by a tab, comma, or spaces. "
@@ -72,55 +85,47 @@ public class VarOptSamplingCL extends SketchCommandLineParser<VarOptItemsSketch<
 
   @Override
   protected VarOptItemsSketch<String>  deserializeSketch(final byte[] bytes) {
-    // BufferReader br =
-    //    new BufferedReader(new InputStreamReader(new ByteArrayInputStream(bytes,UTF_8)));
-    // String itemStr = "";
-    // VarOptItemsSketch<String> sketch =  // user defined k
-    //    VarOptItemsSketch.newInstance(Integer.parseInt(cmd.getOptionValue("k")));
-
-    // try {
-    //   while ((itemStr = br.readLine()) != null) {
-    //     String[] tokens = itemStr.split("\\s+");
-    //     if (tokens.length == 2) {
-    //       sketch.update(tokens[1], Double.parseDouble(tokens[0]));
-    //     }
-    //   }
-    // } catch (final IOException | NumberFormatException e ) {
-    //   printlnErr("Read Error: Item: " + itemStr + ", " + br.toString());
-    //   throw new RuntimeException(e);
-    // }
-    return null; //VarOptItemsSketch.heapify(Memory.wrap(bytes), new ArrayOfItemsSerDe<String>());
+    final Memory mem = Memory.wrap(bytes);
+    final VarOptItemsSketch<String> sketch =
+        VarOptItemsSketch.heapify(mem, new ArrayOfStringsSerDe());
+    return sketch;
   }
 
   @Override
   protected byte[] serializeSketch(final VarOptItemsSketch<String> sketch) {
-    // String itemStr = "";
-    // VarOptItemsSamples<String> samples = union.getResult().getSketchSamples();
-    // for (VarOptItemsSamples<String>.WeightedSample ws : samples) {
-    //   itemStr += ws.getItem() + "\t" + ws.getWeight() + "\n";
-    // }
-    // return itemStr.getBytes();
-    return null; //
-    // return sketch.toByteArray(new ArrayOfItemsSerDe<String>());
+    return sketch.toByteArray(new ArrayOfStringsSerDe());
   }
 
   @Override
   protected void mergeSketches() {
-    //   int k = sketches.get(sketches.size()-1).getK();
-    //   VarOptItemsUnion<String> union = VarOptItemsUnion.newInstance(k);
-    //   for (VarOptItemsSketch  sketch: sketches) {
-    //     union.update(sketch);
-    //   }
-    //   sketches.add(union.getResult());
+    final int k = sketches.get(sketches.size() - 1).getK();
+    final VarOptItemsUnion<String> union = VarOptItemsUnion.newInstance(k);
+    for (VarOptItemsSketch<String>  sketch: sketches) {
+      union.update(sketch);
+    }
+    sketches.add(union.getResult());
   }
 
   @Override
   protected void queryCurrentSketch() {
-    final VarOptItemsSketch<String>  sketch =  sketches.get(sketches.size() - 1);
-    final VarOptItemsSamples<String> samples = sketch.getSketchSamples();
+    if (sketches.size() > 0) {
+      final VarOptItemsSketch<String>  sketch =  sketches.get(sketches.size() - 1);
 
-    for (VarOptItemsSamples<String>.WeightedSample ws : samples) {
-      System.out.println(ws.getItem() + "\t" + ws.getWeight());
+      if (cl.hasOption("n")) {
+        final String n = Long.toString(sketch.getN());
+        println("Stream Length: " + n);
+      }
+
+      if (cl.hasOption("m")) {
+        final String m = Long.toString(sketch.getNumSamples());
+        println("Num Samples  : " + m);
+      }
+
+      final VarOptItemsSamples<String> samples = sketch.getSketchSamples();
+      println("\nItems" + TAB + "Weights");
+      for (VarOptItemsSamples<String>.WeightedSample ws : samples) {
+        System.out.println(ws.getItem() + "\t" + ws.getWeight());
+      }
     }
   }
 }

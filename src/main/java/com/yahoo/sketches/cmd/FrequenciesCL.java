@@ -150,7 +150,7 @@ import com.yahoo.sketches.frequencies.ItemsSketch;
         println("Stream Length   : " + n);
       }
 
-      if (cl.hasOption("t")) {
+      if (cl.hasOption("t")) { //print NO_FALSE_POSITIVES items only
         optionChosen = true;
         final ItemsSketch.Row<String>[] rowArr =
             sketch.getFrequentItems(ErrorType.NO_FALSE_POSITIVES);
@@ -160,7 +160,7 @@ import com.yahoo.sketches.frequencies.ItemsSketch;
         }
       }
 
-      if (cl.hasOption("T")) {
+      if (cl.hasOption("T")) { //print NO_FALSE_POSITIVES item & freq estimate
         optionChosen = true;
         final ItemsSketch.Row<String>[] rowArr =
             sketch.getFrequentItems(ErrorType.NO_FALSE_POSITIVES);
@@ -204,7 +204,7 @@ import com.yahoo.sketches.frequencies.ItemsSketch;
         }
       }
 
-      //print NO_FALSE_POSITIVES item & freq estimate if no option chosen
+      //Default: print NO_FALSE_POSITIVES item & freq estimate = opt T
       if (!optionChosen) {
         final ItemsSketch.Row<String>[] rowArr =
             sketch.getFrequentItems(ErrorType.NO_FALSE_POSITIVES);
