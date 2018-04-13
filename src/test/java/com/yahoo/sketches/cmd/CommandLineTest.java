@@ -26,6 +26,17 @@ public class CommandLineTest {
   String serFileName1 = "ser1.bin";
   String serFileName2 = "ser2.bin";
 
+  @AfterClass
+  public void deleteFiles() {
+    deleteFile(dataFileName1);
+    deleteFile(dataFileName2);
+    deleteFile(ranksFileName);
+    deleteFile(valuesFileName);
+    deleteFile(freqDataFileName);
+    deleteFile(freqQueryFileName);
+    deleteFile(serFileName1);
+    deleteFile(serFileName2);
+  }
 
   //@Test  //enable/disable here for visual checking
   public void outputHelp() {
@@ -61,18 +72,6 @@ public class CommandLineTest {
   public void outputManual() {
     String[] line = new String[] {"man"};
     SketchCommandLineParser.main(line);
-  }
-
-  @AfterClass
-  public void deleteFiles() {
-    deleteFile(dataFileName1);
-    deleteFile(dataFileName2);
-    deleteFile(ranksFileName);
-    deleteFile(valuesFileName);
-    deleteFile(freqDataFileName);
-    deleteFile(freqQueryFileName);
-    deleteFile(serFileName1);
-    deleteFile(serFileName2);
   }
 
   //TEST UNIQUES
