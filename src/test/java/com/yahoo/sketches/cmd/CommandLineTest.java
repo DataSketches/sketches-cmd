@@ -5,9 +5,12 @@
 
 package com.yahoo.sketches.cmd;
 
-import static com.yahoo.sketches.Files.appendStringToFile;
-
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
 
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.Test;
@@ -242,43 +245,53 @@ public class CommandLineTest {
   private static void createUniquesFile(int start, int len, String fileName) {
     File file = new File(fileName);
     if (file.exists()) { return; }
-    for (int i = 0; i < len; i++) {
-      appendStringToFile(Integer.toString(i + start) + LS, fileName);
+    try (PrintWriter out = getPrintWriter(file)) {
+      for (int i = 0; i < len; i++) {
+        out.print(Integer.toString(i + start) + LS);
+      }
     }
   }
 
   private static void createRanksFile(String fileName) {
     File file = new File(fileName);
     if (file.exists()) { return; }
-    appendStringToFile("0.0" + LS, fileName);
-    appendStringToFile("0.5" + LS, fileName);
-    appendStringToFile("1.0", fileName);
+    try (PrintWriter out = getPrintWriter(file)) {
+      out.print("0.0" + LS);
+      out.print("0.5" + LS);
+      out.print("1.0");
+    }
   }
 
   private static void createValuesFile(String fileName) {
     File file = new File(fileName);
     if (file.exists()) { return; }
-    appendStringToFile("0" + LS, fileName);
-    appendStringToFile("10000" + LS, fileName);
-    appendStringToFile("20000", fileName);
+    try (PrintWriter out = getPrintWriter(file)) {
+      out.print("0" + LS);
+      out.print("10000" + LS);
+      out.print("20000");
+    }
   }
 
   private static void createFreqDataFile(String fileName) {
     File file = new File(fileName);
     if (file.exists()) { return; }
-    for (int i = 1; i <= 19975; i++) {
-      appendStringToFile("1\t" + i + LS, fileName);
-    }
-    for (int i = 19976; i <= 20000; i++) {
-      appendStringToFile(i + "\t" + i + LS, fileName);
+    try (PrintWriter out = getPrintWriter(file)) {
+      for (int i = 1; i <= 19975; i++) {
+        out.print("1\t" + i + LS);
+      }
+      for (int i = 19976; i <= 20000; i++) {
+        out.print(i + "\t" + i + LS);
+      }
     }
   }
 
   private static void createFreqQueryFile(String fileName) {
     File file = new File(fileName);
     if (file.exists()) { return; }
-    for (int i = 19976; i <= 20000; i++) {
-      appendStringToFile(i + LS, fileName);
+    try (PrintWriter out = getPrintWriter(file)) {
+      for (int i = 19976; i <= 20000; i++) {
+        out.print(i + LS);
+      }
     }
   }
 
@@ -302,6 +315,32 @@ public class CommandLineTest {
    * @param s value to print
    */
   static void println(String s) {
-    System.out.println(s); //disable here
+    System.out.println(s);
   }
+
+  /**
+   * Gets PrintWriter for creating a new file and or appending to an existing file.
+   * @param file the file
+   * @return PrintWriter
+   */
+  static PrintWriter getPrintWriter(File file) {
+    if (!file.isFile()) { // does not exist
+      try {
+        file.createNewFile();
+      } catch (Exception e) {
+        throw new RuntimeException("Cannot create file: " + file.getName() + LS + e);
+      }
+    }
+    try {
+      PrintWriter out =
+          new PrintWriter(
+              new BufferedWriter(
+                  new OutputStreamWriter(
+                      new FileOutputStream(file, true))));
+      return out;
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
 }
