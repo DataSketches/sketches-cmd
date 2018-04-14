@@ -26,7 +26,7 @@ public class VarOptSamplingCL extends SketchCommandLineParser<VarOptItemsSketch<
         .longOpt("stream-length")
         .desc("query stream length")
         .build());
-    options.addOption(Option.builder("m")
+    options.addOption(Option.builder("r")
         .longOpt("num-samples")
         .desc("query number of samples retained")
         .build());
@@ -113,12 +113,12 @@ public class VarOptSamplingCL extends SketchCommandLineParser<VarOptItemsSketch<
 
       if (cl.hasOption("n")) {
         final String n = Long.toString(sketch.getN());
-        println("Stream Length: " + n);
+        println("Stream Length   : " + n);
       }
 
-      if (cl.hasOption("m")) {
-        final String m = Long.toString(sketch.getNumSamples());
-        println("Num Samples  : " + m);
+      if (cl.hasOption("r")) {
+        final String ret = Long.toString(sketch.getNumSamples());
+        println("Samples Retained: " + ret);
       }
 
       final VarOptItemsSamples<String> samples = sketch.getSketchSamples();

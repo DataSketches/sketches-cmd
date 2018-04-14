@@ -220,11 +220,11 @@ public class CommandLineTest {
 
     createFreqDataFile(freqDataFileName);
 
-    println("\nUpdating VarOpt Items Sketch 1: n, m, samples");
+    println("\nUpdating VarOpt Items Sketch 1: samples");
     callMain("vsamp  -d " + freqDataFileName);
 
-    println("\nUpdating VarOpt Items Sketch 1: n, m, samples");
-    callMain("vsamp -k 64 -w -n -m -d " + freqDataFileName + " -o " + serFileName1);
+    println("\nUpdating VarOpt Items Sketch 1: n, r, samples");
+    callMain("vsamp -k 64 -w -n -r -d " + freqDataFileName + " -o " + serFileName1);
 
     println("\nUpdating VarOpt Items Sketch 2: samples");
     callMain("vsamp -k 64 -w -d " + freqDataFileName + " -o " + serFileName2);
