@@ -38,8 +38,8 @@ public class CommandLineTest {
     deleteFile(serFileName2);
   }
 
-  //@Test  //enable/disable here for visual checking
-  public void outputHelp() {
+  @Test  //enable/disable here for visual checking
+  public void outputMiscHelp() {
     String[] line = new String[] {""};
     SketchCommandLineParser.main(line);
 
@@ -68,7 +68,15 @@ public class CommandLineTest {
     SketchCommandLineParser.main(line);
   }
 
-  //@Test
+  @Test
+  public void checkMisc() {
+    SketchCommandLineParser.main(null);
+    SketchCommandLineParser.main(new String[] { "-help" });
+    SketchCommandLineParser.main(new String[] { "help" });
+    SketchCommandLineParser.main(new String[] { "abc" });
+  }
+
+  @Test
   public void outputManual() {
     String[] line = new String[] {"man"};
     SketchCommandLineParser.main(line);
@@ -169,6 +177,9 @@ public class CommandLineTest {
     createFreqDataFile(freqDataFileName);
     createFreqQueryFile(freqQueryFileName);
 
+    println("\nUpdating freq Items Sketch 1");
+    callMain("freq  -d " + freqDataFileName);
+
     println("\nUpdating Freq Items Sketch 1, print error, N, top ids, top ids + freq.");
     callMain("freq -k 256 -w -e -n -t -T -d " + freqDataFileName + " -o " + serFileName1);
 
@@ -214,6 +225,9 @@ public class CommandLineTest {
     println("Creating Data Files...");
 
     createFreqDataFile(freqDataFileName);
+
+    println("\nUpdating VarOpt Items Sketch 1: n, m, samples");
+    callMain("vsamp  -d " + freqDataFileName);
 
     println("\nUpdating VarOpt Items Sketch 1: n, m, samples");
     callMain("vsamp -k 64 -w -n -m -d " + freqDataFileName + " -o " + serFileName1);

@@ -28,14 +28,20 @@ import org.apache.commons.cli.ParseException;
  * <p>Although the sketching library can be used on a single machine, the more typical use case is
  * on large, highly distributed system architectures where command line access may not be practical.
  *
- * <p>After cloning or forking this repository do a <i>mvn clean package</i> and then move the
- * <i>sketches-cmd-x.y.z-SNAPSHOT-with-shaded-core.jar</i> to the root of your install
+ * <p><b>TO INSTALL</b></p>
+ *
+ * <p>Fork this repository to a directory of your choice.
+ *
+ * <p>Install Maven if you don't have it.
+ *
+ * <p>Do a <i>mvn clean package</i> and then move the
+ * <i>sketches-cmd-x.y.z-...-with-shaded-core.jar</i> to the root of your install
  * directory.
  *
  * <p>At the root of the directory is a bash shell script file <i>ds</i>. Make this file
  * executable with <i>chmod 755 ds</i> or equivalent.
  *
- * <p>Run the tool <i>./ds</i>, which should print out the help for token 0.
+ * <p>Run the tool <i>./ds man</i>, which should print out the manual.
  *
  * @param <T> Sketch Type
  */
@@ -129,7 +135,6 @@ public abstract class SketchCommandLineParser<T> {
     }
   }
 
-  @SuppressWarnings("unused")
   private static void manual() {
     help();
     println("");
@@ -143,7 +148,7 @@ public abstract class SketchCommandLineParser<T> {
     println("");
     new ThetaCL().showHelp();
     println("");
-    new VarOptSamplingCL();
+    new VarOptSamplingCL().showHelp();
   }
 
   protected void runCommandLineUtil(final String[] args) {
