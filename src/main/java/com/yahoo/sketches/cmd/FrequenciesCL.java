@@ -43,6 +43,10 @@ import com.yahoo.sketches.frequencies.ItemsSketch;
           .longOpt("stream-length")
           .desc("query stream length")
           .build());
+      options.addOption(Option.builder("y")
+          .longOpt("no-false-negatives")
+          .desc("use NO_FALSE_NEGATIVES")
+          .build());
       options.addOption(Option.builder("F")
           .longOpt("id2freq")
           .desc("query frequencies for items with given ID")
@@ -137,43 +141,46 @@ import com.yahoo.sketches.frequencies.ItemsSketch;
     if (sketches.size() > 0) {
       final ItemsSketch<String> sketch = sketches.get(sketches.size() - 1);
       boolean optionChosen = false;
+      ErrorType errType = ErrorType.NO_FALSE_POSITIVES;
+
+      if (cl.hasOption("y")) {
+        errType = ErrorType.NO_FALSE_NEGATIVES;
+      }
 
       if (cl.hasOption("e")) {
-        optionChosen = true;
         final String errOff = Long.toString(sketch.getMaximumError());
         println("Max Error Offset: " + errOff);
       }
 
       if (cl.hasOption("n")) {
-        optionChosen = true;
         final String n = Long.toString(sketch.getStreamLength());
         println("Stream Length   : " + n);
       }
 
-      if (cl.hasOption("t")) { //print NO_FALSE_POSITIVES items only
+      if (cl.hasOption("t")) { //print items only of ErrorType
         optionChosen = true;
-        final ItemsSketch.Row<String>[] rowArr =
-            sketch.getFrequentItems(ErrorType.NO_FALSE_POSITIVES);
+        final ItemsSketch.Row<String>[] rowArr = sketch.getFrequentItems(errType);
+        println("ErrorType = " + errType.toString());
         println("\nItems");
         for (int i = 0; i < rowArr.length; i++) {
           println(rowArr[i].getItem());
         }
       }
 
-      if (cl.hasOption("T")) { //print NO_FALSE_POSITIVES item & freq estimate
+      if (cl.hasOption("T")) { //print item & freq of ErrorType
         optionChosen = true;
-        final ItemsSketch.Row<String>[] rowArr =
-            sketch.getFrequentItems(ErrorType.NO_FALSE_POSITIVES);
+        final ItemsSketch.Row<String>[] rowArr = sketch.getFrequentItems(errType);
+        println("ErrorType = " + errType.toString());
         println("\nItems" + TAB + "Frequency");
         for (int i = 0; i < rowArr.length; i++) {
           println(rowArr[i].getItem() + TAB + rowArr[i].getEstimate());
         }
       }
 
-      if (cl.hasOption("F")) {
+      if (cl.hasOption("F")) { //print items and freq from list
         optionChosen = true;
         final ItemsSketch.Row<String>[] rowArr =
-            sketch.getFrequentItems(ErrorType.NO_FALSE_POSITIVES);
+            sketch.getFrequentItems(errType);
         final String[] items = cl.getOptionValues("F");
         println("\nItems" + TAB + "Frequency");
         for (int i = 0; i < items.length; i++) {
@@ -187,10 +194,10 @@ import com.yahoo.sketches.frequencies.ItemsSketch;
         }
       }
 
-      if (cl.hasOption("f")) {
+      if (cl.hasOption("f")) { //print items and freq from file
         optionChosen = true;
         final ItemsSketch.Row<String>[] rowArr =
-            sketch.getFrequentItems(ErrorType.NO_FALSE_POSITIVES);
+            sketch.getFrequentItems(errType);
         final String[] items = queryFileReader(cl.getOptionValue("f"));
         println("\nItems" + TAB + "Frequency");
         for (int i = 0; i < items.length; i++) {
@@ -204,10 +211,10 @@ import com.yahoo.sketches.frequencies.ItemsSketch;
         }
       }
 
-      //Default: print NO_FALSE_POSITIVES item & freq estimate = opt T
+      //Default: print item & freq of ErrorType, same as opt T
       if (!optionChosen) {
-        final ItemsSketch.Row<String>[] rowArr =
-            sketch.getFrequentItems(ErrorType.NO_FALSE_POSITIVES);
+        final ItemsSketch.Row<String>[] rowArr = sketch.getFrequentItems(errType);
+        println("ErrorType = " + errType.toString());
         println("\nItems" + TAB + "Frequency");
         for (int i = 0; i < rowArr.length; i++) {
           println(rowArr[i].getItem() + TAB + rowArr[i].getEstimate());

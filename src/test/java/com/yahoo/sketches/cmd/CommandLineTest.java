@@ -41,57 +41,48 @@ public class CommandLineTest {
     deleteFile(serFileName2);
   }
 
-  @Test  //enable/disable here for visual checking
-  public void outputMiscHelp() {
-    String[] line = new String[] {""};
-    SketchCommandLineParser.main(line);
-
-    println("");
-    line = new String[] {"freq", "-help"};
-    SketchCommandLineParser.main(line);
-
-    println("");
-    line = new String[] {"hll", "-help"};
-    SketchCommandLineParser.main(line);
-
-    println("");
-    line = new String[] {"quant", "-help"};
-    SketchCommandLineParser.main(line);
-
-    println("");
-    line = new String[] {"rsamp", "-help"};
-    SketchCommandLineParser.main(line);
-
-    println("");
-    line = new String[] {"theta", "-help"};
-    SketchCommandLineParser.main(line);
-
-    println("");
-    line = new String[] {"vsamp", "-help"};
-    SketchCommandLineParser.main(line);
-  }
-
   @Test
-  public void checkMisc() {
+  public void checkAllHelp() {
+    println("");
     SketchCommandLineParser.main(null);
+    println("");
+    SketchCommandLineParser.main(new String[] {""});
+    println("");
+    SketchCommandLineParser.main(new String[] {"freq", "-help"});
+    println("");
+    SketchCommandLineParser.main(new String[] {"hll", "-help"});
+    println("");
+    SketchCommandLineParser.main(new String[] {"quant", "-help"});
+    println("");
+    SketchCommandLineParser.main(new String[] {"rsamp", "-help"});
+    println("");
+    SketchCommandLineParser.main(new String[] {"theta", "-help"});
+    println("");
+    SketchCommandLineParser.main(new String[] {"vsamp", "-help"});
+    println("");
     SketchCommandLineParser.main(new String[] { "-help" });
+    println("");
     SketchCommandLineParser.main(new String[] { "help" });
+    println("");
+    print("INTENTIONAL ERROR: ");
     SketchCommandLineParser.main(new String[] { "abc" });
+    println("");
   }
 
   @Test
-  public void outputManual() {
-    String[] line = new String[] {"man"};
-    SketchCommandLineParser.main(line);
+  public void checkManual() {
+    println("");
+    SketchCommandLineParser.main(new String[] {"man"});
+    println("");
   }
 
   //TEST UNIQUES
   @Test
   public void checkTheta() {
-    deleteFile(serFileName1);
-    deleteFile(serFileName2);
     println("\nCHECK THETA");
     println("Creating Data Files...");
+    deleteFile(serFileName1);
+    deleteFile(serFileName2);
 
     createUniquesFile(1, 20000, dataFileName1);
     createUniquesFile(15001, 20000, dataFileName2);
@@ -114,10 +105,10 @@ public class CommandLineTest {
 
   @Test
   public void checkHll() {
-    deleteFile(serFileName1);
-    deleteFile(serFileName2);
     println("\nCHECK HLL");
     println("Creating Data Files...");
+    deleteFile(serFileName1);
+    deleteFile(serFileName2);
 
     createUniquesFile(0, 20000, dataFileName1);
     createUniquesFile(15000, 20000, dataFileName2); //overlap is 500
@@ -135,10 +126,10 @@ public class CommandLineTest {
   //TEST QUANTILES
   @Test
   public void checkQuantiles() {
-    deleteFile(serFileName1);
-    deleteFile(serFileName2);
     println("\nCHECK QUANTILES");
     println("Creating Data Files...");
+    deleteFile(serFileName1);
+    deleteFile(serFileName2);
 
     createUniquesFile(0, 20000, dataFileName1);
 
@@ -172,16 +163,16 @@ public class CommandLineTest {
   //TEST FREQUENT ITEMS
   @Test
   public void checkFreqItems() {
-    deleteFile(serFileName1);
-    deleteFile(serFileName2);
     println("\nCHECK FREQUENT ITEMS");
     println("Creating Data Files...");
+    deleteFile(serFileName1);
+    deleteFile(serFileName2);
 
     createFreqDataFile(freqDataFileName);
     createFreqQueryFile(freqQueryFileName);
 
-    println("\nUpdating freq Items Sketch 1");
-    callMain("freq  -d " + freqDataFileName);
+    println("\nUpdating freq Items Sketch 1, default output");
+    callMain("freq -w -d " + freqDataFileName);
 
     println("\nUpdating Freq Items Sketch 1, print error, N, top ids, top ids + freq.");
     callMain("freq -k 256 -w -e -n -t -T -d " + freqDataFileName + " -o " + serFileName1);
@@ -189,8 +180,8 @@ public class CommandLineTest {
     println("\nUpdating Freq Items Sketch 2, default output.");
     callMain("freq -k 256 -w -d " + freqDataFileName + " -o " + serFileName2);
 
-    println("\nMerge Freq Items Sketches 1 & 2, default output.");
-    callMain("freq -k 256 -s " + serFileName1 + " " + serFileName2);
+    println("\nMerge Freq Items Sketches 1 & 2, NoFalseNeg, default output.");
+    callMain("freq -k 256 -y -s " + serFileName1 + " " + serFileName2);
 
     println("\nQuery specific item frequencies from Sketch 1");
     callMain("freq -k 256 -s " + serFileName1 + " -F 19976 19977 20000");
@@ -202,10 +193,10 @@ public class CommandLineTest {
   //TEST Reservoir Samples
   @Test
   public void checkReservior() {
-    deleteFile(serFileName1);
-    deleteFile(serFileName2);
     println("\nCHECK RESERVIOR");
     println("Creating Data Files...");
+    deleteFile(serFileName1);
+    deleteFile(serFileName2);
 
     createUniquesFile(0, 20000, dataFileName1);
 
@@ -222,10 +213,10 @@ public class CommandLineTest {
   //TEST VarOpt
   @Test
   public void checkVarOpt() {
-    deleteFile(serFileName1);
-    deleteFile(serFileName2);
     println("\nCHECK VAROPT");
     println("Creating Data Files...");
+    deleteFile(serFileName1);
+    deleteFile(serFileName2);
 
     createFreqDataFile(freqDataFileName);
 
@@ -316,6 +307,10 @@ public class CommandLineTest {
    */
   static void println(String s) {
     System.out.println(s);
+  }
+
+  static void print(String s) {
+    System.out.print(s);
   }
 
   /**
