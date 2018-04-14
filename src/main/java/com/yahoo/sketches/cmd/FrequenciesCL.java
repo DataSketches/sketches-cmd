@@ -47,13 +47,13 @@ import com.yahoo.sketches.frequencies.ItemsSketch;
           .longOpt("no-false-negatives")
           .desc("use NO_FALSE_NEGATIVES")
           .build());
-      options.addOption(Option.builder("F")
+      options.addOption(Option.builder("f")
           .longOpt("id2freq")
-          .desc("query frequencies for items with given ID")
+          .desc("query frequencies for items with ids from list")
           .hasArgs() //unlimited
           .argName("ID")
           .build());
-      options.addOption(Option.builder("f")
+      options.addOption(Option.builder("F")
           .longOpt("id2freq-file")
           .desc("query frequencies for items with ids from FILE")
           .hasArg()
@@ -157,7 +157,7 @@ import com.yahoo.sketches.frequencies.ItemsSketch;
         println("Stream Length   : " + n);
       }
 
-      if (cl.hasOption("t")) { //print items only of ErrorType
+      if (cl.hasOption("t")) { //print only items of ErrorType
         optionChosen = true;
         final ItemsSketch.Row<String>[] rowArr = sketch.getFrequentItems(errType);
         println("ErrorType = " + errType.toString());
@@ -177,11 +177,10 @@ import com.yahoo.sketches.frequencies.ItemsSketch;
         }
       }
 
-      if (cl.hasOption("F")) { //print items and freq from list
+      if (cl.hasOption("f")) { //print items and freq from list
         optionChosen = true;
-        final ItemsSketch.Row<String>[] rowArr =
-            sketch.getFrequentItems(errType);
-        final String[] items = cl.getOptionValues("F");
+        final ItemsSketch.Row<String>[] rowArr = sketch.getFrequentItems(errType);
+        final String[] items = cl.getOptionValues("f");
         println("\nItems" + TAB + "Frequency");
         for (int i = 0; i < items.length; i++) {
           long freq = 0;
@@ -194,11 +193,10 @@ import com.yahoo.sketches.frequencies.ItemsSketch;
         }
       }
 
-      if (cl.hasOption("f")) { //print items and freq from file
+      if (cl.hasOption("F")) { //print items and freq from file
         optionChosen = true;
-        final ItemsSketch.Row<String>[] rowArr =
-            sketch.getFrequentItems(errType);
-        final String[] items = queryFileReader(cl.getOptionValue("f"));
+        final ItemsSketch.Row<String>[] rowArr = sketch.getFrequentItems(errType);
+        final String[] items = queryFileReader(cl.getOptionValue("F"));
         println("\nItems" + TAB + "Frequency");
         for (int i = 0; i < items.length; i++) {
           long freq = 0;

@@ -35,36 +35,32 @@ import com.yahoo.sketches.quantiles.UpdateDoublesSketch;
           .hasArg()
           .build());
       // output options
-      options.addOption(Option.builder("R")
+      options.addOption(Option.builder("r")
           .longOpt("rank2value")
-          .desc("query values with ranks DOUBLES")
+          .desc("query values with ranks from list DOUBLES")
           .hasArgs() //unlimited
           .argName("DOUBLES")
           .build());
-      options.addOption(Option.builder("r")
+      options.addOption(Option.builder("R")
           .longOpt("rank2value-file")
           .desc("query values with ranks from FILE")
           .hasArg()
           .argName("FILE")
           .build());
-      options.addOption(Option.builder("V")
+      options.addOption(Option.builder("v")
           .longOpt("value2rank")
-          .desc("query ranks with values DOUBLES")
+          .desc("query ranks with values from list DOUBLES")
           .hasArgs() //unlimited
           .argName("DOUBLES")
           .build());
-      options.addOption(Option.builder("v")
+      options.addOption(Option.builder("V")
           .longOpt("value2rank-file")
           .desc("query ranks with values from FILE")
           .hasArg()
           .argName("FILE")
           .build());
-      options.addOption(Option.builder("m")
-          .longOpt("median")
-          .desc("query median")
-          .build());
       options.addOption(Option.builder("b")
-          .longOpt("histogram-bars-number")
+          .longOpt("number-histogram-bars")
           .desc("number of bars in the histogram")
           .hasArg()
           .argName("INT")
@@ -141,13 +137,7 @@ import com.yahoo.sketches.quantiles.UpdateDoublesSketch;
       final UpdateDoublesSketch sketch = sketches.get(sketches.size() - 1);
       boolean optionChosen = false;
 
-      if (cl.hasOption("m")) {
-        optionChosen = true;
-        final String median = String.format("%.2f", sketch.getQuantile(0.5));
-        println(median);
-      }
-
-      if (cl.hasOption("h")) {
+      if (cl.hasOption("h")) { //Histogram
         optionChosen = true;
         int splitPoints = DEFAULT_NUM_BINS - 1;
         if (cl.hasOption("b")) {
@@ -168,7 +158,7 @@ import com.yahoo.sketches.quantiles.UpdateDoublesSketch;
         }
       }
 
-      if (cl.hasOption("lh")) {
+      if (cl.hasOption("lh")) { //log Histogram
         optionChosen = true;
         final double zeroSub = Double.parseDouble(cl.getOptionValue("lh"));
         int splitPoints = DEFAULT_NUM_BINS - 1;
@@ -190,10 +180,10 @@ import com.yahoo.sketches.quantiles.UpdateDoublesSketch;
         }
       }
 
-      if (cl.hasOption("R")) { //multiple ranks from the command line
+      if (cl.hasOption("r")) { //ranks to value from list
         optionChosen = true;
         println("\nRank + TAB + Value");
-        final String[] ranks = cl.getOptionValues("R");
+        final String[] ranks = cl.getOptionValues("r");
         println("\nRank" + TAB + "Value");
         for (String rank : ranks) {
           final String quant = String.format("%.2f", sketch.getQuantile(Double.parseDouble(rank)));
@@ -201,9 +191,9 @@ import com.yahoo.sketches.quantiles.UpdateDoublesSketch;
         }
       }
 
-      if (cl.hasOption("r")) { //multiple ranks from a file
+      if (cl.hasOption("R")) { //ranks to value from file
         optionChosen = true;
-        final String[] ranks = queryFileReader(cl.getOptionValue("r"));
+        final String[] ranks = queryFileReader(cl.getOptionValue("R"));
         println("\nRank" + TAB + "Value");
         for (String rank: ranks) {
             final String quant = String.format("%.2f", sketch.getQuantile(Double.parseDouble(rank)));
@@ -211,9 +201,9 @@ import com.yahoo.sketches.quantiles.UpdateDoublesSketch;
         }
       }
 
-      if (cl.hasOption("V")) {
+      if (cl.hasOption("v")) { //values to ranks from list
         optionChosen = true;
-        final String[] values = cl.getOptionValues("V");
+        final String[] values = cl.getOptionValues("v");
         final double[] valuesArray = Arrays.stream(values).mapToDouble(Double::parseDouble).toArray();
         Arrays.sort(valuesArray);
         final double[] cdf =  sketch.getCDF(valuesArray);
@@ -223,9 +213,9 @@ import com.yahoo.sketches.quantiles.UpdateDoublesSketch;
         }
       }
 
-      if (cl.hasOption("v")) {
+      if (cl.hasOption("V")) { //values to ranks from file
         optionChosen = true;
-        final String[] items = queryFileReader(cl.getOptionValue("v"));
+        final String[] items = queryFileReader(cl.getOptionValue("V"));
         final double[] valuesArray = Arrays.stream(items).mapToDouble(Double::parseDouble).toArray();
         final double[] cdf =  sketch.getCDF(valuesArray);
         println("\nValue" + TAB + "Rank");
@@ -234,9 +224,10 @@ import com.yahoo.sketches.quantiles.UpdateDoublesSketch;
         }
       }
 
-      // print deciles if no option chosen
+      // print deciles if no other option chosen
       if (!optionChosen) {
         final double[] ranks = new double[] {0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0};
+        println("Print deciles as default:");
         println("\nRank" + TAB + "Value");
         final double[] values = sketch.getQuantiles(ranks);
         for (int i = 0; i < values.length; i++) {

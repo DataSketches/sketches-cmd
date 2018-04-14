@@ -133,31 +133,31 @@ public class CommandLineTest {
 
     createUniquesFile(0, 20000, dataFileName1);
 
-    println("\nUpdating Quantiles Sketch 1, no options, default deciles");
+    println("\nUpdating Quantiles Sketch 1, default deciles");
     callMain("quant -k 256 -d " + dataFileName1 + " -o " + serFileName1);
 
-    println("\nUpdating Quantiles Sketch 2, options: median");
-    callMain("quant -k 256 -m -d " + dataFileName1 + " -o " + serFileName2);
+    println("\nUpdating Quantiles Sketch 2, default deciles");
+    callMain("quant -k 256 -d " + dataFileName1 + " -o " + serFileName2);
 
-    println("\nMerge Quantiles Sketch 1 and 2, options: summarize, default deciles");
+    println("\nMerge Quantiles Sketch 1 and 2, summarize, default deciles");
     callMain("quant -k 256 -p -s " + serFileName1 + " " + serFileName2);
 
-    println("\nQuery Histograms from Sketch 1, options: lin & log histograms");
+    println("\nQuery Histograms from Sketch 1, lin & log histograms");
     callMain("quant -k 256 -s " + serFileName1 + " -b 30 -h -lh 1");
 
-    println("\nQuery specific values from ranks from Sketch 1");
-    callMain("quant -k 256 -s " + serFileName1 + " -V 1 10000 20000");
+    println("\nQuery specific values to ranks from list from Sketch 1");
+    callMain("quant -k 256 -s " + serFileName1 + " -v 1 10000 20000");
 
-    println("\nQuery specific ranks from values from Sketch 1");
-    callMain("quant -k 256 -s " + serFileName1 + " -R 0 .5 1");
+    println("\nQuery specific ranks to values from list from Sketch 1");
+    callMain("quant -k 256 -s " + serFileName1 + " -r 0 .5 1");
 
     createRanksFile(ranksFileName);
-    println("\nQuery specific values from ranks from file from Sketch 1");
-    callMain("quant -k 256 -s " + serFileName1 + " -r " + ranksFileName);
+    println("\nQuery specific ranks to values from file from Sketch 1");
+    callMain("quant -k 256 -s " + serFileName1 + " -R " + ranksFileName);
 
     createValuesFile(valuesFileName);
-    println("\nQuery specific ranks from values from file from Sketch 1");
-    callMain("quant -k 256 -s " + serFileName1 + " -v " + valuesFileName);
+    println("\nQuery specific values to ranks from file from Sketch 1");
+    callMain("quant -k 256 -s " + serFileName1 + " -V " + valuesFileName);
   }
 
   //TEST FREQUENT ITEMS
@@ -183,11 +183,11 @@ public class CommandLineTest {
     println("\nMerge Freq Items Sketches 1 & 2, NoFalseNeg, default output.");
     callMain("freq -k 256 -y -s " + serFileName1 + " " + serFileName2);
 
-    println("\nQuery specific item frequencies from Sketch 1");
-    callMain("freq -k 256 -s " + serFileName1 + " -F 19976 19977 20000");
+    println("\nQuery specific item frequencies from Sketch 1 from list");
+    callMain("freq -k 256 -s " + serFileName1 + " -f 19976 19977 20000");
 
     println("\nQuery specific item frequencies from Sketch 1 from file");
-    callMain("freq -k 256 -s " + serFileName1 + " -f " +  freqQueryFileName);
+    callMain("freq -k 256 -s " + serFileName1 + " -F " +  freqQueryFileName);
   }
 
   //TEST Reservoir Samples
