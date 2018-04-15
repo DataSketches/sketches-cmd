@@ -53,12 +53,12 @@ public class VarOptSamplingCL extends SketchCommandLineParser<VarOptItemsSketch<
     } else {
       sketch = VarOptItemsSketch.newInstance(32); // default k is 32
     }
-    sketches.add(sketch);
+    sketchList.add(sketch);
   }
 
   @Override
   protected void updateSketch(final BufferedReader br) {
-    final VarOptItemsSketch<String> sketch = sketches.get(sketches.size() - 1);
+    final VarOptItemsSketch<String> sketch = sketchList.get(sketchList.size() - 1);
     String itemStr = "";
     try {
       if (cl.hasOption("w")) {
@@ -98,18 +98,18 @@ public class VarOptSamplingCL extends SketchCommandLineParser<VarOptItemsSketch<
 
   @Override
   protected void mergeSketches() {
-    final int k = sketches.get(sketches.size() - 1).getK();
+    final int k = sketchList.get(sketchList.size() - 1).getK();
     final VarOptItemsUnion<String> union = VarOptItemsUnion.newInstance(k);
-    for (VarOptItemsSketch<String>  sketch: sketches) {
+    for (VarOptItemsSketch<String>  sketch: sketchList) {
       union.update(sketch);
     }
-    sketches.add(union.getResult());
+    sketchList.add(union.getResult());
   }
 
   @Override
   protected void queryCurrentSketch() {
-    if (sketches.size() > 0) {
-      final VarOptItemsSketch<String>  sketch =  sketches.get(sketches.size() - 1);
+    if (sketchList.size() > 0) {
+      final VarOptItemsSketch<String>  sketch =  sketchList.get(sketchList.size() - 1);
 
       if (cl.hasOption("n")) {
         final String n = Long.toString(sketch.getN());

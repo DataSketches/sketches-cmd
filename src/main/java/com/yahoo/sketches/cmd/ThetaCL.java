@@ -57,7 +57,7 @@ public class ThetaCL extends SketchCommandLineParser<Sketch> {
 
   @Override
   protected void updateSketch(final BufferedReader br) {
-    if (sketches.size() > 0) {
+    if (sketchList.size() > 0) {
       buildSketch();
     }
     String itemStr = "";
@@ -69,13 +69,13 @@ public class ThetaCL extends SketchCommandLineParser<Sketch> {
       printlnErr("Read Error: Item: " + itemStr + ", " + br.toString());
       throw new RuntimeException(e);
     }
-    if (sketches.size() > 0) {
+    if (sketchList.size() > 0) {
       final Union union = SetOperation.builder().buildUnion();
-      union.update(sketches.get(sketches.size() - 1));
+      union.update(sketchList.get(sketchList.size() - 1));
       union.update(updateSketch);
-      sketches.add(union.getResult());
+      sketchList.add(union.getResult());
     } else {
-      sketches.add(updateSketch.compact());
+      sketchList.add(updateSketch.compact());
     }
   }
 
@@ -94,22 +94,22 @@ public class ThetaCL extends SketchCommandLineParser<Sketch> {
   protected void mergeSketches() {
       if (cl.hasOption("i")) {
         final Intersection intersection = SetOperation.builder().buildIntersection();
-        for (Sketch sketch: sketches) {
+        for (Sketch sketch: sketchList) {
           intersection.update(sketch);
         }
-        sketches.add(intersection.getResult());
+        sketchList.add(intersection.getResult());
         return;
       }
 
       if (cl.hasOption("m")) {
         final Union union = SetOperation.builder().buildUnion();
-        for (int i = 1; i < sketches.size(); i++) {
-          union.update(sketches.get(i));
+        for (int i = 1; i < sketchList.size(); i++) { //skip the first one
+          union.update(sketchList.get(i));
         }
 
         final AnotB aNotB = Sketches.setOperationBuilder().buildANotB();
-        aNotB.update(sketches.get(0), union.getResult());
-        sketches.add(aNotB.getResult());
+        aNotB.update(sketchList.get(0), union.getResult());
+        sketchList.add(aNotB.getResult());
         return;
       }
 
@@ -119,17 +119,17 @@ public class ThetaCL extends SketchCommandLineParser<Sketch> {
         builder.setNominalEntries(Integer.parseInt(cl.getOptionValue("k")));
       }
       final Union union = builder.buildUnion();
-      for (Sketch sketch: sketches) {
+      for (Sketch sketch: sketchList) {
         union.update(sketch);
       }
-      sketches.add(union.getResult());
+      sketchList.add(union.getResult());
       return;
   }
 
   @Override
   protected void queryCurrentSketch() {
-    if (sketches.size() > 0) {
-      final Sketch sketch = sketches.get(sketches.size() - 1);
+    if (sketchList.size() > 0) {
+      final Sketch sketch = sketchList.get(sketchList.size() - 1);
       final double est = sketch.getEstimate();
       final double lb = sketch.getLowerBound(2);
       final double ub = sketch.getUpperBound(2);

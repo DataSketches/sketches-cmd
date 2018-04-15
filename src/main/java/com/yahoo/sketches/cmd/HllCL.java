@@ -39,13 +39,13 @@ public class HllCL extends SketchCommandLineParser<HllSketch> {
     } else {
       sketch =  new HllSketch(DEFAULT_LG_K);
     }
-    sketches.add(sketch);
+    sketchList.add(sketch);
   }
 
   @Override
   protected void updateSketch(final BufferedReader br) {
     String itemStr = "";
-    final HllSketch sketch = sketches.get(sketches.size() - 1);
+    final HllSketch sketch = sketchList.get(sketchList.size() - 1);
     try {
       while ((itemStr = br.readLine()) != null) {
         sketch.update(itemStr);
@@ -70,16 +70,16 @@ public class HllCL extends SketchCommandLineParser<HllSketch> {
   protected void mergeSketches() {
     final int lgk = cl.hasOption("k") ? Integer.parseInt(cl.getOptionValue("lgk")) : DEFAULT_LG_K;
     final Union union = new Union(lgk);
-    for (HllSketch sketch: sketches) {
+    for (HllSketch sketch: sketchList) {
       union.update(sketch);
     }
-    sketches.add(union.getResult(TgtHllType.HLL_4));
+    sketchList.add(union.getResult(TgtHllType.HLL_4));
   }
 
   @Override
   protected void queryCurrentSketch() {
-    if (sketches.size() > 0) {
-      final HllSketch sketch = sketches.get(sketches.size() - 1);
+    if (sketchList.size() > 0) {
+      final HllSketch sketch = sketchList.get(sketchList.size() - 1);
       final double est = sketch.getEstimate();
       final double lb = sketch.getLowerBound(2);
       final double ub = sketch.getUpperBound(2);

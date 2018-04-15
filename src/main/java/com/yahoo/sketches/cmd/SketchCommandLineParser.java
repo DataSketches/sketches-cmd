@@ -52,12 +52,12 @@ public abstract class SketchCommandLineParser<T> {
   static final String OFF = "\033[0m";  //4 char
 
   private boolean updateFlag;
-  ArrayList<T> sketches;
+  ArrayList<T> sketchList;
   Options options;
   org.apache.commons.cli.CommandLine cl;
 
   SketchCommandLineParser() {
-    sketches = new ArrayList<>();
+    sketchList = new ArrayList<>();
     options = new Options();
     options.addOption(Option.builder("d")
         .longOpt("data-from-file")
@@ -167,9 +167,9 @@ public abstract class SketchCommandLineParser<T> {
           updateFlag = true;
         }
 
-        if (sketches.size() > 1) {
+        if (sketchList.size() > 1) {
           mergeSketches();
-        } else if (sketches.size() == 0) {
+        } else if (sketchList.size() == 0) {
           buildSketch();
         }
 
@@ -241,12 +241,12 @@ public abstract class SketchCommandLineParser<T> {
 
   private void loadInputSketches() {
       try {
-        final String[] inputSketchesPathes = cl.getOptionValues("s");
-        for (int i = 0; i < inputSketchesPathes.length; i++) {
-          try (FileInputStream in = new FileInputStream(inputSketchesPathes[i])) {
+        final String[] inputSketches = cl.getOptionValues("s");
+        for (int i = 0; i < inputSketches.length; i++) {
+          try (FileInputStream in = new FileInputStream(inputSketches[i])) {
             final byte[] bytes = new byte[in.available()];
             in.read(bytes);
-            sketches.add(deserializeSketch(bytes));
+            sketchList.add(deserializeSketch(bytes));
           }
         }
       } catch (final IOException e) {
@@ -259,7 +259,7 @@ public abstract class SketchCommandLineParser<T> {
       final File file = new File(fname);
       if (file.exists()) { file.delete(); }
       try (FileOutputStream out = new FileOutputStream(cl.getOptionValue("o"))) {
-        out.write(serializeSketch(sketches.get(sketches.size() - 1)));
+        out.write(serializeSketch(sketchList.get(sketchList.size() - 1)));
       } catch (final IOException e) {
         printlnErr("saveCurrentSketch Error: " + e.getMessage());
       }
@@ -286,7 +286,7 @@ public abstract class SketchCommandLineParser<T> {
   }
 
   private void printCurrentSketchSummary() {
-    final T sketch = sketches.get(sketches.size() - 1);
+    final T sketch = sketchList.get(sketchList.size() - 1);
     println(LS + sketch.toString());
   }
 

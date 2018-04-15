@@ -113,6 +113,9 @@ public class CommandLineTest {
     createUniquesFile(0, 20000, dataFileName1);
     createUniquesFile(15000, 20000, dataFileName2); //overlap is 500
 
+    println("\nUpdating HLL Sketch 1, default lgK=12:");
+    callMain("hll -d " + dataFileName1 + " -o " + serFileName1);
+
     println("\nUpdating HLL Sketch 1:");
     callMain("hll -lgk 12 -d " + dataFileName1 + " -o " + serFileName1);
 
@@ -190,7 +193,7 @@ public class CommandLineTest {
     callMain("freq -k 256 -s " + serFileName1 + " -F " +  freqQueryFileName);
   }
 
-  //TEST Reservoir Samples
+  //TEST RESERVOIR Samples
   @Test
   public void checkReservior() {
     println("\nCHECK RESERVIOR");
@@ -200,7 +203,10 @@ public class CommandLineTest {
 
     createUniquesFile(0, 20000, dataFileName1);
 
-    println("\nUpdating Reservior Sketch 1 with summary");
+    println("\nUpdating Reservior Sketch 1, default k=32");
+    callMain("rsamp -d " + dataFileName1 + " -o " + serFileName1);
+
+    println("\nUpdating Reservior Sketch 1");
     callMain("rsamp -k 25  -d " + dataFileName1 + " -o " + serFileName1);
 
     println("\nUpdating Reservior Sketch 2 with summary");

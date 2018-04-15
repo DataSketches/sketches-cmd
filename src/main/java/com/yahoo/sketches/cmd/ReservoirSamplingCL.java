@@ -40,13 +40,13 @@ public class ReservoirSamplingCL extends SketchCommandLineParser<ReservoirItemsS
     } else {
       sketch = ReservoirItemsSketch.newInstance(32); // default k is 32
     }
-    sketches.add(sketch);
+    sketchList.add(sketch);
   }
 
   @Override
   protected void updateSketch(final BufferedReader br) {
     String itemStr = "";
-    final ReservoirItemsSketch<Long> sketch = sketches.get(sketches.size() - 1);
+    final ReservoirItemsSketch<Long> sketch = sketchList.get(sketchList.size() - 1);
     try {
       while ((itemStr = br.readLine()) != null) {
         final long item = Long.parseLong(itemStr);
@@ -70,17 +70,17 @@ public class ReservoirSamplingCL extends SketchCommandLineParser<ReservoirItemsS
 
   @Override
   protected void mergeSketches() {
-    final int k = sketches.get(sketches.size() - 1).getK();
+    final int k = sketchList.get(sketchList.size() - 1).getK();
     final ReservoirItemsUnion<Long> union = ReservoirItemsUnion.newInstance(k);
-    for (ReservoirItemsSketch<Long>  sketch: sketches) {
+    for (ReservoirItemsSketch<Long>  sketch: sketchList) {
       union.update(sketch);
     }
-    sketches.add(union.getResult());
+    sketchList.add(union.getResult());
   }
 
   @Override
   protected void queryCurrentSketch() {
-    final ReservoirItemsSketch<Long>  sketch =  sketches.get(sketches.size() - 1);
+    final ReservoirItemsSketch<Long>  sketch =  sketchList.get(sketchList.size() - 1);
     final Long[] samples = sketch.getSamples();
     println("\nUniform Samples");
     for (int i = 0; i < samples.length; i++) {

@@ -82,12 +82,12 @@ import com.yahoo.sketches.frequencies.ItemsSketch;
     } else { //default k
       sketch = new ItemsSketch<>(DEFAULT_SIZE);
     }
-    sketches.add(sketch);
+    sketchList.add(sketch);
   }
 
   @Override
   protected void updateSketch(final BufferedReader br) {
-    final ItemsSketch<String> sketch = sketches.get(sketches.size() - 1);
+    final ItemsSketch<String> sketch = sketchList.get(sketchList.size() - 1);
     String itemStr = "";
     try {
       if (cl.hasOption("w")) {
@@ -130,16 +130,16 @@ import com.yahoo.sketches.frequencies.ItemsSketch;
     } else { //default k
       union = new ItemsSketch<>(DEFAULT_SIZE);
     }
-    for (final ItemsSketch<String> sketch: sketches) {
+    for (final ItemsSketch<String> sketch: sketchList) {
       union.merge(sketch);
     }
-    sketches.add(union);
+    sketchList.add(union);
   }
 
   @Override
   protected void queryCurrentSketch() {
-    if (sketches.size() > 0) {
-      final ItemsSketch<String> sketch = sketches.get(sketches.size() - 1);
+    if (sketchList.size() > 0) {
+      final ItemsSketch<String> sketch = sketchList.get(sketchList.size() - 1);
       boolean optionChosen = false;
       ErrorType errType = ErrorType.NO_FALSE_POSITIVES;
 

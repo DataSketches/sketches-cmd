@@ -90,13 +90,13 @@ import com.yahoo.sketches.quantiles.UpdateDoublesSketch;
     if (cl.hasOption("k")) {
       builder.setK(Integer.parseInt(cl.getOptionValue("k")));
     }
-    sketches.add(builder.build());
+    sketchList.add(builder.build());
   }
 
   @Override
   protected void updateSketch(final BufferedReader br) {
     String itemStr = "";
-    final UpdateDoublesSketch sketch = sketches.get(sketches.size() - 1);
+    final UpdateDoublesSketch sketch = sketchList.get(sketchList.size() - 1);
     try {
       while ((itemStr = br.readLine()) != null) {
         final double item = Double.parseDouble(itemStr);
@@ -125,16 +125,16 @@ import com.yahoo.sketches.quantiles.UpdateDoublesSketch;
       builder.setMaxK(Integer.parseInt(cl.getOptionValue("k")));
     }
     final DoublesUnion union = builder.build();
-    for (UpdateDoublesSketch sketch: sketches) {
+    for (UpdateDoublesSketch sketch: sketchList) {
       union.update(sketch);
     }
-    sketches.add(union.getResult());
+    sketchList.add(union.getResult());
   }
 
   @Override
   protected void queryCurrentSketch() {
-    if (sketches.size() > 0) {
-      final UpdateDoublesSketch sketch = sketches.get(sketches.size() - 1);
+    if (sketchList.size() > 0) {
+      final UpdateDoublesSketch sketch = sketchList.get(sketchList.size() - 1);
       boolean optionChosen = false;
 
       if (cl.hasOption("h")) { //Histogram
