@@ -84,24 +84,24 @@ import com.yahoo.sketches.quantiles.UpdateDoublesSketch;
         helpf.printHelp("ds quant", options);
   }
 
-  @Override
-  protected void buildSketch() {
+  protected UpdateDoublesSketch buildSketch() {
     final DoublesSketchBuilder builder = DoublesSketch.builder();
     if (cl.hasOption("k")) {
       builder.setK(Integer.parseInt(cl.getOptionValue("k")));
     }
-    sketchList.add(builder.build());
+    return builder.build();
   }
 
   @Override
   protected void updateSketch(final BufferedReader br) {
+    final UpdateDoublesSketch sketch = buildSketch();
     String itemStr = "";
-    final UpdateDoublesSketch sketch = sketchList.get(sketchList.size() - 1);
     try {
       while ((itemStr = br.readLine()) != null) {
         final double item = Double.parseDouble(itemStr);
         sketch.update(item);
       }
+      sketchList.add(sketch);
     } catch (final IOException | NumberFormatException e ) {
       printlnErr("Read Error: Item: " + itemStr + ", " + br.toString());
       throw new RuntimeException(e);

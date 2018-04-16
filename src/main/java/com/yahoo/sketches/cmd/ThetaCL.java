@@ -34,7 +34,8 @@ public class ThetaCL extends SketchCommandLineParser<Sketch> {
           .build());
       options.addOption(Option.builder("m")
           .longOpt("set-minus")
-          .desc("from the first sketch subtract all others")
+          .desc("AnotB: From the first sketch subtract all others. "
+          + "If '-d' is specified, it becomes the 'A' sketch.")
           .build());
    }
 
@@ -46,36 +47,26 @@ public class ThetaCL extends SketchCommandLineParser<Sketch> {
   }
 
 
-  @Override
-  protected void buildSketch() {
+  protected UpdateSketch buildSketch() {
     final UpdateSketchBuilder bldr = Sketches.updateSketchBuilder();
     if (cl.hasOption("k")) {
       bldr.setNominalEntries(Integer.parseInt(cl.getOptionValue("k")));  // user defined k
     }
-    updateSketch = bldr.build();
+    return bldr.build();
   }
 
   @Override
   protected void updateSketch(final BufferedReader br) {
-    if (sketchList.size() > 0) {
-      buildSketch();
-    }
+    final UpdateSketch updateSketch = buildSketch();
     String itemStr = "";
     try {
       while ((itemStr = br.readLine()) != null) {
         updateSketch.update(itemStr);
       }
+      sketchList.add(updateSketch.compact());
     } catch (final IOException e) {
       printlnErr("Read Error: Item: " + itemStr + ", " + br.toString());
       throw new RuntimeException(e);
-    }
-    if (sketchList.size() > 0) {
-      final Union union = SetOperation.builder().buildUnion();
-      union.update(sketchList.get(sketchList.size() - 1));
-      union.update(updateSketch);
-      sketchList.add(union.getResult());
-    } else {
-      sketchList.add(updateSketch.compact());
     }
   }
 
@@ -86,44 +77,49 @@ public class ThetaCL extends SketchCommandLineParser<Sketch> {
 
   @Override
   protected byte[] serializeSketch(final Sketch sketch) {
+    if (sketch instanceof UpdateSketch) {
+      return ((UpdateSketch) sketch).compact().toByteArray();
+    }
     return sketch.toByteArray();
   }
 
 
   @Override
   protected void mergeSketches() {
-      if (cl.hasOption("i")) {
-        final Intersection intersection = SetOperation.builder().buildIntersection();
-        for (Sketch sketch: sketchList) {
-          intersection.update(sketch);
-        }
-        sketchList.add(intersection.getResult());
-        return;
+    //INTERSECTION
+    if (cl.hasOption("i")) { //-i and -m are mutually exclusive
+      final Intersection intersection = SetOperation.builder().buildIntersection();
+      for (Sketch sketch: sketchList) { //intersect all sketches in list
+        intersection.update(sketch);
       }
-
-      if (cl.hasOption("m")) {
-        final Union union = SetOperation.builder().buildUnion();
-        for (int i = 1; i < sketchList.size(); i++) { //skip the first one
-          union.update(sketchList.get(i));
-        }
-
-        final AnotB aNotB = Sketches.setOperationBuilder().buildANotB();
-        aNotB.update(sketchList.get(0), union.getResult());
-        sketchList.add(aNotB.getResult());
-        return;
-      }
-
-      // default merge is union
-      final SetOperationBuilder builder = SetOperation.builder();
-      if (cl.hasOption("k")) { // user defined k
-        builder.setNominalEntries(Integer.parseInt(cl.getOptionValue("k")));
-      }
-      final Union union = builder.buildUnion();
-      for (Sketch sketch: sketchList) {
-        union.update(sketch);
-      }
-      sketchList.add(union.getResult());
+      sketchList.add(intersection.getResult()); //add result at the end of list
       return;
+    }
+    //A NOT B
+    if (cl.hasOption("m")) {
+      final Union union = SetOperation.builder().buildUnion();
+      //union all sketches in list except the first one
+      for (int i = 1; i < sketchList.size(); i++) { //skip the first one
+        union.update(sketchList.get(i));
+      }
+
+      final AnotB aNotB = Sketches.setOperationBuilder().buildANotB();
+      aNotB.update(sketchList.get(0), union.getResult()); //A = first one, B = Union
+      sketchList.add(aNotB.getResult()); //add result at the end of list
+      return;
+    }
+
+    // otherwise union
+    final SetOperationBuilder builder = SetOperation.builder();
+    if (cl.hasOption("k")) { // user defined k
+      builder.setNominalEntries(Integer.parseInt(cl.getOptionValue("k")));
+    }
+    final Union union = builder.buildUnion();
+    for (Sketch sketch: sketchList) {
+      union.update(sketch);
+    }
+    sketchList.add(union.getResult()); //add result at the end
+    return;
   }
 
   @Override

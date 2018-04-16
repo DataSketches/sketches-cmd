@@ -74,20 +74,14 @@ import com.yahoo.sketches.frequencies.ItemsSketch;
         helpf.printHelp("ds freq", options);
   }
 
-  @Override
-  protected void buildSketch() {
-    final ItemsSketch<String> sketch;
-    if (cl.hasOption("k")) { //user defined k
-      sketch = new ItemsSketch<>(Integer.parseInt(cl.getOptionValue("k")));
-    } else { //default k
-      sketch = new ItemsSketch<>(DEFAULT_SIZE);
-    }
-    sketchList.add(sketch);
+  protected ItemsSketch<String> buildSketch() {
+    final int k = cl.hasOption("k") ? Integer.parseInt(cl.getOptionValue("k")) : DEFAULT_SIZE;
+    return new ItemsSketch<>(k);
   }
 
   @Override
   protected void updateSketch(final BufferedReader br) {
-    final ItemsSketch<String> sketch = sketchList.get(sketchList.size() - 1);
+    final ItemsSketch<String> sketch = buildSketch();
     String itemStr = "";
     try {
       if (cl.hasOption("w")) {
@@ -106,6 +100,7 @@ import com.yahoo.sketches.frequencies.ItemsSketch;
           sketch.update(itemStr, 1);
         }
       }
+      sketchList.add(sketch);
     } catch (final IOException | NumberFormatException e) {
       printlnErr("Read Error: Item: " + itemStr + ", " + br.toString());
       throw new RuntimeException(e);

@@ -101,6 +101,10 @@ public class CommandLineTest {
 
     println("\nTheta Sketch 1 minus Theta Sketch 2 and Summarize:");
     callMain("theta -k 4096 -p -m -s " + serFileName1 + " " + serFileName2);
+
+    //-d and -s together
+    println("\nUpdating from -d and Merging with -s");
+    callMain("theta -k 4096 -p -d " + dataFileName2 + " -s " + serFileName1);
   }
 
   @Test
@@ -124,6 +128,10 @@ public class CommandLineTest {
 
     println("\nMerge HLL Sketch 1 and 2 and Summarize:");
     callMain("hll -lgk 12 -p -s " + serFileName1 + " " + serFileName2);
+
+    //-d and -s together
+    println("\nUpdating from -d and Merging with -s");
+    callMain("hll -lgk 12 -p -d " + dataFileName2 + " -s " + serFileName1);
   }
 
   //TEST QUANTILES

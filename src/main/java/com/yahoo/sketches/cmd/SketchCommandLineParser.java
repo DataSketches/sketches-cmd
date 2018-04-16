@@ -51,7 +51,7 @@ public abstract class SketchCommandLineParser<T> {
   static final String BOLD = "\033[1m"; //4 char
   static final String OFF = "\033[0m";  //4 char
 
-  private boolean updateFlag;
+
   ArrayList<T> sketchList;
   Options options;
   org.apache.commons.cli.CommandLine cl;
@@ -135,98 +135,111 @@ public abstract class SketchCommandLineParser<T> {
     }
   }
 
-  private static void manual() {
-    help();
-    println("");
-    new FrequenciesCL().showHelp();
-    println("");
-    new HllCL().showHelp();
-    println("");
-    new QuantilesCL().showHelp();
-    println("");
-    new ReservoirSamplingCL().showHelp();
-    println("");
-    new ThetaCL().showHelp();
-    println("");
-    new VarOptSamplingCL().showHelp();
-  }
-
   protected void runCommandLineUtil(final String[] args) {
-    updateFlag = false;
+    boolean sFlag = false;
+    boolean dFlag = false;
     final CommandLineParser parser = new DefaultParser();
     try {
-        cl = parser.parse(options, args);
-
-        if (cl.hasOption("help")) {
-          showHelp();
-          return;
-        }
-
-        if (cl.hasOption("s")) {
-          loadInputSketches();
-          updateFlag = true;
-        }
-
-        if (sketchList.size() > 1) {
-          mergeSketches();
-        } else if (sketchList.size() == 0) {
-          buildSketch();
-        }
-
-        updateCurrentSketch();
-        if (updateFlag) {
-          queryCurrentSketch();
-          if (cl.hasOption("p")) {
-            printCurrentSketchSummary();
-          }
-          if (cl.hasOption("o")) {
-            saveCurrentSketch();
-          }
-        } else {
-          showHelp();
-        }
+      cl = parser.parse(options,  args);
+      if (cl.hasOption("help")) {
+        showHelp();
+        return;
+      }
+      sFlag = cl.hasOption("s");
+      dFlag = cl.hasOption("d");
     } catch (final ParseException e) {
-            printlnErr("runCommandLineUtil Error: " + e.getMessage());
+      printlnErr("runCommandLineUtil Error: " + e.getMessage());
     }
-}
+
+    //PROCESS INPUT: s = 01; d = 10
+    final int sw = (sFlag ? 1 : 0) | (dFlag ? 2 : 0);
+    switch (sw) {
+      case 0 : { //00: no d, no s => StdIn
+        processStdIn();
+        break;
+      }
+      case 1 : { //01: no d, s => load s sketches and merge, puts result on list
+        loadInputSketches();
+        mergeSketches(); //if -m, treats the 1st sketch as A
+        break;
+      }
+      case 2 : { //10: d, no s => update with d, and add to list
+        processDataFile();
+        break;
+      }
+      case 3 : { //11: d, s => A = update with d, B = union of s, put result on list
+        processDataFile(); //puts "-d" sketch first
+        loadInputSketches(); //adds -s sketches to the list
+        //if -m (AnotB), treats the -d sketch as A, B = sketches on list, puts result on list
+        mergeSketches();
+        break;
+      }
+    }
+
+    //PROCESS OUTPUT
+    if (sketchList.size() > 0) {
+      queryCurrentSketch(); //from last sketch in sketchList
+      if (cl.hasOption("p")) {
+        printCurrentSketchSummary();
+      }
+      if (cl.hasOption("o")) {
+        saveCurrentSketch();
+      }
+    } else {
+      showHelp();
+    }
+  }
 
   //USED BY SUB-CLASSES
 
+  /**
+   * Outputs help for the selected sketch
+   */
   protected abstract void showHelp();
 
-  protected abstract void buildSketch();
-
+  /**
+   * Updates Sketch from BufferedReader, puts result at end of the list.
+   * @param br the given BufferedReader
+   */
   protected abstract void updateSketch(BufferedReader br);
+
+  /**
+   * Performs allowed set operations on all the sketches in the list.
+   * If "-m" is allowed, argument A = list[0], argument B is the union of
+   * the remainder of the list. Puts result at the end of the list
+   */
+  protected abstract void mergeSketches();
+
+  /**
+   * Performs query operations on the last sketch on the list.
+   */
+  protected abstract void queryCurrentSketch();
 
   protected abstract T deserializeSketch(byte[] bytes);
 
   protected abstract byte[] serializeSketch(T sketch);
 
-  protected abstract void mergeSketches();
-
-  protected abstract void queryCurrentSketch();
-
-  //Used by sub-classes that require multi-argument lines from a file
+  /**
+   * Read arguments from a file and return as a String array.
+   * Used by sub-classes that require multiple arguments from a file
+   * @param pathToFile the file path
+   * @return contents of file as a String array
+   */
   protected String[] queryFileReader(final String pathToFile) {
-    final ArrayList<String> values = new ArrayList<>();
-    String itemStr = "";
-    final String[] valuesArray;
+    final ArrayList<String> argsList = new ArrayList<>();
+    String argStr = "";
     try (BufferedReader in =
         new BufferedReader(new InputStreamReader(new FileInputStream(pathToFile)))) {
-      while ((itemStr = in.readLine()) != null) {
-        if (itemStr.isEmpty()) { continue; }
-        values.add(itemStr);
+      while ((argStr = in.readLine()) != null) {
+        if (argStr.isEmpty()) { continue; }
+        argsList.add(argStr);
       }
-      valuesArray = new String[values.size()];
-      for (int i = 0; i < valuesArray.length; i++) {
-          valuesArray[i] = values.get(i);
-      }
+      return argsList.toArray(new String[0]);
     }
     catch (final IOException  e ) {
-      printlnErr("File Read Error: Item: " + itemStr );
+      printlnErr("File Read Error: Item: " + argStr );
       throw new RuntimeException(e);
     }
-    return valuesArray;
   }
 
   protected static void printlnErr(final String s) {
@@ -237,9 +250,31 @@ public abstract class SketchCommandLineParser<T> {
     System.out.println(s);
   }
 
-  //RESTRICTED
+  //PRIVATE
 
-  private void loadInputSketches() {
+  /**
+   * Updates sketch from StdIn, puts result at end of list.
+   * Called when neither "-d" nor "-s" is specified.
+   */
+  private void processStdIn() {
+    try (final BufferedReader br = new BufferedReader(new InputStreamReader(
+        System.in, UTF_8))) {
+      updateSketch(br);
+    } catch (final IOException e) {
+      printlnErr("updateCurrentSketch Error: " + e.getMessage());
+    }
+  }
+
+  private void processDataFile() { //For "-d" option
+    try (final BufferedReader br = new BufferedReader(new InputStreamReader(
+        new FileInputStream(cl.getOptionValue("d")), UTF_8))) {
+      updateSketch(br); //puts result on the list
+    } catch (final IOException e) {
+      printlnErr("updateCurrentSketch Error: " + e.getMessage());
+    }
+  }
+
+  private void loadInputSketches() { //For "-s" option
       try {
         final String[] inputSketches = cl.getOptionValues("s");
         for (int i = 0; i < inputSketches.length; i++) {
@@ -254,7 +289,10 @@ public abstract class SketchCommandLineParser<T> {
       }
   }
 
-  private void saveCurrentSketch() {
+  /**
+   * Serializes the last on the list to the "o" option file.
+   */
+  private void saveCurrentSketch() { //For "-o" option
       final String fname = cl.getOptionValue("o");
       final File file = new File(fname);
       if (file.exists()) { file.delete(); }
@@ -265,29 +303,25 @@ public abstract class SketchCommandLineParser<T> {
       }
   }
 
-  private void updateCurrentSketch() {
-    try {
-      if (cl.hasOption("d")) { //data input from FILE
-        try (final BufferedReader br = new BufferedReader(new InputStreamReader(
-            new FileInputStream(cl.getOptionValue("d")), UTF_8))) {
-          updateSketch(br);
-          updateFlag = true;
-        }
-      } else if (!cl.hasOption("s")) { //and NOT sketches from FILES
-        try (final BufferedReader br = new BufferedReader(new InputStreamReader(
-            System.in, UTF_8))) {
-          updateSketch(br);
-          updateFlag = true;
-        }
-      }
-    } catch (final IOException e) {
-      printlnErr("updateCurrentSketch Error: " + e.getMessage());
-    }
-  }
-
-  private void printCurrentSketchSummary() {
+  private void printCurrentSketchSummary() { //For "-p" option
     final T sketch = sketchList.get(sketchList.size() - 1);
     println(LS + sketch.toString());
+  }
+
+  private static void manual() { //For "man" option
+    help();
+    println("");
+    new FrequenciesCL().showHelp();
+    println("");
+    new HllCL().showHelp();
+    println("");
+    new QuantilesCL().showHelp();
+    println("");
+    new ReservoirSamplingCL().showHelp();
+    println("");
+    new ThetaCL().showHelp();
+    println("");
+    new VarOptSamplingCL().showHelp();
   }
 
   /**

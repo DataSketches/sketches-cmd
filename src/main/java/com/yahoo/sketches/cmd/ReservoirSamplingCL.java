@@ -13,6 +13,7 @@ import com.yahoo.sketches.sampling.ReservoirItemsUnion;
 
 
 public class ReservoirSamplingCL extends SketchCommandLineParser<ReservoirItemsSketch<Long>> {
+
   ReservoirSamplingCL() {
     super();
     // input options
@@ -30,28 +31,22 @@ public class ReservoirSamplingCL extends SketchCommandLineParser<ReservoirItemsS
         helpf.printHelp( "ds rsamp", options);
   }
 
-
-  @Override
-  protected void buildSketch() {
-    final ReservoirItemsSketch<Long> sketch;
-    if (cl.hasOption("k")) {
-      sketch = //user defined k
-          ReservoirItemsSketch.newInstance(Integer.parseInt(cl.getOptionValue("k")));
-    } else {
-      sketch = ReservoirItemsSketch.newInstance(32); // default k is 32
-    }
-    sketchList.add(sketch);
+  protected ReservoirItemsSketch<Long> buildSketch() {
+    final int k = cl.hasOption("k") ? Integer.parseInt(cl.getOptionValue("k")) : 32;
+    return ReservoirItemsSketch.newInstance(k);
   }
 
   @Override
   protected void updateSketch(final BufferedReader br) {
+    buildSketch();
     String itemStr = "";
-    final ReservoirItemsSketch<Long> sketch = sketchList.get(sketchList.size() - 1);
+    final ReservoirItemsSketch<Long> sketch = buildSketch();
     try {
       while ((itemStr = br.readLine()) != null) {
         final long item = Long.parseLong(itemStr);
         sketch.update(item);
       }
+      sketchList.add(sketch);
     } catch (final IOException | NumberFormatException e ) {
       printlnErr("Read Error: Item: " + itemStr + ", " + br.toString());
       throw new RuntimeException(e);

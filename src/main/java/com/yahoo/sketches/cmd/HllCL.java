@@ -31,25 +31,21 @@ public class HllCL extends SketchCommandLineParser<HllSketch> {
         helpf.printHelp("ds hll", options);
   }
 
-  @Override
-  protected void buildSketch() {
-    final HllSketch sketch;
-    if (cl.hasOption("lgk")) {
-      sketch =  new HllSketch(Integer.parseInt(cl.getOptionValue("lgk"))); // user defined lgK
-    } else {
-      sketch =  new HllSketch(DEFAULT_LG_K);
-    }
-    sketchList.add(sketch);
+  protected HllSketch buildSketch() {
+    final int lgk = cl.hasOption("lgk")
+        ? Integer.parseInt(cl.getOptionValue("lgk")) : DEFAULT_LG_K;
+    return new HllSketch(lgk);
   }
 
   @Override
   protected void updateSketch(final BufferedReader br) {
+    final HllSketch sketch = buildSketch();
     String itemStr = "";
-    final HllSketch sketch = sketchList.get(sketchList.size() - 1);
     try {
       while ((itemStr = br.readLine()) != null) {
         sketch.update(itemStr);
       }
+      sketchList.add(sketch);
     } catch (final IOException e) {
       printlnErr("Read Error: Item: " + itemStr + ", " + br.toString());
       throw new RuntimeException(e);

@@ -15,6 +15,7 @@ import com.yahoo.sketches.sampling.VarOptItemsSketch;
 import com.yahoo.sketches.sampling.VarOptItemsUnion;
 
 public class VarOptSamplingCL extends SketchCommandLineParser<VarOptItemsSketch<String>> {
+
   VarOptSamplingCL() {
     super();
     // input options
@@ -45,20 +46,14 @@ public class VarOptSamplingCL extends SketchCommandLineParser<VarOptItemsSketch<
       helpf.printHelp( "ds vsamp", options);
   }
 
-  @Override
-  protected void buildSketch() {
-    final VarOptItemsSketch<String> sketch;
-    if (cl.hasOption("k")) { // user defined k
-      sketch = VarOptItemsSketch.newInstance(Integer.parseInt(cl.getOptionValue("k")));
-    } else {
-      sketch = VarOptItemsSketch.newInstance(32); // default k is 32
-    }
-    sketchList.add(sketch);
+  protected VarOptItemsSketch<String> buildSketch() {
+    final int k = cl.hasOption("k") ? Integer.parseInt(cl.getOptionValue("k")) : 32;
+    return VarOptItemsSketch.newInstance(k);
   }
 
   @Override
   protected void updateSketch(final BufferedReader br) {
-    final VarOptItemsSketch<String> sketch = sketchList.get(sketchList.size() - 1);
+    final VarOptItemsSketch<String> sketch = buildSketch();
     String itemStr = "";
     try {
       if (cl.hasOption("w")) {
@@ -77,6 +72,7 @@ public class VarOptSamplingCL extends SketchCommandLineParser<VarOptItemsSketch<
           sketch.update(itemStr, 1.0);
         }
       }
+      sketchList.add(sketch);
     } catch (final IOException | NumberFormatException e) {
       printlnErr("Read Error: Item: " + itemStr + ", " + br.toString());
       throw new RuntimeException(e);
