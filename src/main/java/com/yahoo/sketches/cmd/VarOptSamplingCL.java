@@ -135,13 +135,13 @@ public class VarOptSamplingCL extends SketchCommandLineParser<VarOptItemsSketch<
         final String regex = cl.getOptionValue("x");
         final Predicate<String> predicate = Pattern.compile(regex).asPredicate();
         final SampleSubsetSummary ssSum = sketch.estimateSubsetSum(predicate);
-        println("Lower Bound Sum: " + ssSum.getLowerBound());
-        println("Estimate Sum   : " + ssSum.getEstimate());
-        println("Upper Bound Sum: " + ssSum.getUpperBound());
-        println("Total Sketch Wt: " + ssSum.getTotalSketchWeight());
+        println("Lower Bound Sum : " + ssSum.getLowerBound());
+        println("Estimate Sum    : " + ssSum.getEstimate());
+        println("Upper Bound Sum : " + ssSum.getUpperBound());
+        println("Total Sketch Wt : " + ssSum.getTotalSketchWeight());
       }
 
-      if (!!optionChosen) {
+      if (!optionChosen) {
         final VarOptItemsSamples<String> samples = sketch.getSketchSamples();
         println("\nItems" + TAB + "Weights");
         for (VarOptItemsSamples<String>.WeightedSample ws : samples) {
