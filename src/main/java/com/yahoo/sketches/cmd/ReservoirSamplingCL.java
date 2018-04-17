@@ -75,12 +75,13 @@ public class ReservoirSamplingCL extends SketchCommandLineParser<ReservoirItemsS
 
   @Override
   protected void queryCurrentSketch() {
-    final ReservoirItemsSketch<Long>  sketch =  sketchList.get(sketchList.size() - 1);
-    final Long[] samples = sketch.getSamples();
-    println("\nUniform Samples");
-    for (int i = 0; i < samples.length; i++) {
-        System.out.println(samples[i]);
+    if (!cl.hasOption("o")) {
+      final ReservoirItemsSketch<Long>  sketch =  sketchList.get(sketchList.size() - 1);
+      final Long[] samples = sketch.getSamples();
+      println("\nUniform Samples");
+      for (int i = 0; i < samples.length; i++) {
+          System.out.println(samples[i]);
+      }
     }
-    return;
   }
 }

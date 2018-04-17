@@ -360,7 +360,7 @@ public abstract class SketchCommandLineParser<T> {
         + "the items.").append(LS);
     sb.append(spaces + "The default file format is each line is a single item with an assumed "
         + "weight of 1.").append(LS);
-    sb.append(spaces + "Output with no options is all No False Positives with estimate frequencies.")
+    sb.append(spaces + "Output with no options is all No False Positives with estimated frequencies.")
         .append(LS + LS);
 
     sb.append("  ds hll          ");

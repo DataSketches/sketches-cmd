@@ -117,10 +117,12 @@ public class VarOptSamplingCL extends SketchCommandLineParser<VarOptItemsSketch<
         println("Samples Retained: " + ret);
       }
 
-      final VarOptItemsSamples<String> samples = sketch.getSketchSamples();
-      println("\nItems" + TAB + "Weights");
-      for (VarOptItemsSamples<String>.WeightedSample ws : samples) {
-        System.out.println(ws.getItem() + "\t" + ws.getWeight());
+      if (!cl.hasOption("o")) {
+        final VarOptItemsSamples<String> samples = sketch.getSketchSamples();
+        println("\nItems" + TAB + "Weights");
+        for (VarOptItemsSamples<String>.WeightedSample ws : samples) {
+          System.out.println(ws.getItem() + "\t" + ws.getWeight());
+        }
       }
     }
   }
