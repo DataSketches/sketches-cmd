@@ -28,11 +28,11 @@ import com.yahoo.sketches.frequencies.ItemsSketch;
 
       // output options
       options.addOption(Option.builder("t")
-          .longOpt("topk-ids")
+          .longOpt("heavy-ids")
           .desc("query just identities for most frequent items")
           .build());
       options.addOption(Option.builder("T")
-          .longOpt("topk-ids-with-freq")
+          .longOpt("heavy-ids-with-freq")
           .desc("query identities & frequencies for most frequent items")
           .build());
       options.addOption(Option.builder("e")

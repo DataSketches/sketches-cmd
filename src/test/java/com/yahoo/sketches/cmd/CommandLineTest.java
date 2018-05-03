@@ -234,17 +234,20 @@ public class CommandLineTest {
 
     createFreqDataFile(freqDataFileName);
 
-    println("\nUpdating VarOpt Items Sketch 1: samples");
-    callMain("vsamp  -d " + freqDataFileName);
+    println("\nUpdating VarOpt Items Sketch 1: unit weight samples");
+    callMain("vsamp -d " + freqDataFileName);
 
-    println("\nUpdating VarOpt Items Sketch 1: n, r, samples");
+    println("\nUpdating VarOpt Items Sketch 1: n, r, weighted samples, stream len, retained, serialize sketch");
     callMain("vsamp -k 64 -w -n -r -d " + freqDataFileName + " -o " + serFileName1);
 
-    println("\nUpdating VarOpt Items Sketch 2: samples");
+    println("\nUpdating VarOpt Items Sketch 2: weighted samples, serialize sketch");
     callMain("vsamp -k 64 -w -d " + freqDataFileName + " -o " + serFileName2);
 
     println("\nMerge VarOpt Sketch 1 and 2 with summary");
     callMain("vsamp -k 64 -p -s " + serFileName1 + " " + serFileName2);
+
+    println("\nUpdate VarOpt Sketch 1, weighted samples, subset sum");
+    callMain("vsamp -k 64 -w -T -x ^H -d " + freqDataFileName);
   }
 
   private static void createUniquesFile(int start, int len, String fileName) {
@@ -284,8 +287,8 @@ public class CommandLineTest {
       for (int i = 1; i <= 19975; i++) {
         out.print("1\t" + i + LS);
       }
-      for (int i = 19976; i <= 20000; i++) {
-        out.print(i + "\t" + i + LS);
+      for (int i = 19976; i <= 20000; i++) { //Heavy items, weight first
+        out.print(i + "\t" + "H" + i + LS);
       }
     }
   }
