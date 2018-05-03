@@ -5,6 +5,8 @@
 
 package com.yahoo.sketches.cmd;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -43,8 +45,6 @@ public class CommandLineTest {
 
   @Test
   public void checkAllHelp() {
-    println("");
-    SketchCommandLineParser.main(null);
     println("");
     SketchCommandLineParser.main(new String[] {""});
     println("");
@@ -311,7 +311,13 @@ public class CommandLineTest {
 
   private static void deleteFile(String fileName) {
     File file = new File(fileName);
-    if (file.exists()) { file.delete(); }
+    if (file.exists()) {
+      try {
+        java.nio.file.Files.delete(file.toPath());
+      } catch (Exception e) {
+        throw new RuntimeException("Could not delete file: " + e);
+      }
+    }
   }
 
   @Test
@@ -348,7 +354,7 @@ public class CommandLineTest {
           new PrintWriter(
               new BufferedWriter(
                   new OutputStreamWriter(
-                      new FileOutputStream(file, true))));
+                      new FileOutputStream(file, true), UTF_8)));
       return out;
     } catch (IOException e) {
       throw new RuntimeException(e);

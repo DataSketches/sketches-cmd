@@ -79,7 +79,7 @@ public class HllCL extends SketchCommandLineParser<HllSketch> {
       final double est = sketch.getEstimate();
       final double lb = sketch.getLowerBound(2);
       final double ub = sketch.getUpperBound(2);
-      System.out.format("%f %f %f\n",lb, est, ub);
+      System.out.format("%f %f %f" + LS,lb, est, ub);
     }
   }
 

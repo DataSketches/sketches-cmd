@@ -18,7 +18,6 @@ import com.yahoo.sketches.theta.UpdateSketch;
 import com.yahoo.sketches.theta.UpdateSketchBuilder;
 
 public class ThetaCL extends SketchCommandLineParser<Sketch> {
-   protected UpdateSketch updateSketch;
 
    ThetaCL() {
       super();
@@ -129,7 +128,7 @@ public class ThetaCL extends SketchCommandLineParser<Sketch> {
       final double est = sketch.getEstimate();
       final double lb = sketch.getLowerBound(2);
       final double ub = sketch.getUpperBound(2);
-      System.out.format("%f %f %f\n",lb, est, ub);
+      System.out.format("%f %f %f" + LS,lb, est, ub);
     }
   }
 }

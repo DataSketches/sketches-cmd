@@ -148,7 +148,8 @@ public abstract class SketchCommandLineParser<T> {
       sFlag = cl.hasOption("s");
       dFlag = cl.hasOption("d");
     } catch (final ParseException e) {
-      printlnErr("runCommandLineUtil Error: " + e.getMessage());
+      printlnErr("runCommandLineUtil Error: ");
+      throw new RuntimeException(e);
     }
 
     //PROCESS INPUT: s = 01; d = 10
@@ -172,6 +173,10 @@ public abstract class SketchCommandLineParser<T> {
         loadInputSketches(); //adds -s sketches to the list
         //if -m (AnotB), treats the -d sketch as A, B = sketches on list, puts result on list
         mergeSketches();
+        break;
+      }
+      default : {
+        //Cannot happen
         break;
       }
     }
@@ -229,15 +234,15 @@ public abstract class SketchCommandLineParser<T> {
     final ArrayList<String> argsList = new ArrayList<>();
     String argStr = "";
     try (BufferedReader in =
-        new BufferedReader(new InputStreamReader(new FileInputStream(pathToFile)))) {
+        new BufferedReader(new InputStreamReader(new FileInputStream(pathToFile), UTF_8))) {
       while ((argStr = in.readLine()) != null) {
         if (argStr.isEmpty()) { continue; }
         argsList.add(argStr);
       }
       return argsList.toArray(new String[0]);
     }
-    catch (final IOException  e ) {
-      printlnErr("File Read Error: Item: " + argStr );
+    catch (final IOException e) {
+      printlnErr("File Read Error: Item: " + argStr);
       throw new RuntimeException(e);
     }
   }
@@ -261,7 +266,8 @@ public abstract class SketchCommandLineParser<T> {
         System.in, UTF_8))) {
       updateSketch(br);
     } catch (final IOException e) {
-      printlnErr("updateCurrentSketch Error: " + e.getMessage());
+      printlnErr("Update Current Sketch From StdIn Error: ");
+      throw new RuntimeException(e);
     }
   }
 
@@ -270,7 +276,8 @@ public abstract class SketchCommandLineParser<T> {
         new FileInputStream(cl.getOptionValue("d")), UTF_8))) {
       updateSketch(br); //puts result on the list
     } catch (final IOException e) {
-      printlnErr("updateCurrentSketch Error: " + e.getMessage());
+      printlnErr("Update Current Sketch From File Error: ");
+      throw new RuntimeException(e);
     }
   }
 
@@ -285,7 +292,8 @@ public abstract class SketchCommandLineParser<T> {
           }
         }
       } catch (final IOException e) {
-        printlnErr("loadInputSketches Error: " + e.getMessage());
+        printlnErr("Deserialize Input Sketches Error: " + e.getMessage());
+        throw new RuntimeException();
       }
   }
 
@@ -295,11 +303,16 @@ public abstract class SketchCommandLineParser<T> {
   private void saveCurrentSketch() { //For "-o" option
       final String fname = cl.getOptionValue("o");
       final File file = new File(fname);
-      if (file.exists()) { file.delete(); }
+      try {
+        if (file.exists()) { java.nio.file.Files.delete(file.toPath()); }
+      } catch (final Exception e) {
+
+      }
       try (FileOutputStream out = new FileOutputStream(cl.getOptionValue("o"))) {
         out.write(serializeSketch(sketchList.get(sketchList.size() - 1)));
       } catch (final IOException e) {
-        printlnErr("saveCurrentSketch Error: " + e.getMessage());
+        printlnErr("Serialize Current Sketch Error: ");
+        throw new RuntimeException(e);
       }
   }
 
