@@ -9,7 +9,7 @@
     <groupId>com.yahoo.datasketches</groupId>
     <artifactId>sketches-cmd</artifactId>
     <packaging>jar</packaging> <!-- jar is the default -->
-    <version>0.1.0</version>
+    <version>0.1.1-SNAPSHOT</version>
 
     <name>${project.groupId}:${project.artifactId}</name>
     <description>Data Sketches Command Line Application</description>
@@ -102,7 +102,7 @@
         <connection>scm:git:ssh://git@github.com/DataSketches/sketches-cmd.git</connection>
         <developerConnection>scm:git:ssh://git@github.com/DataSketches/sketches-cmd.git</developerConnection>
         <url>https://github.com/DataSketches/sketches-cmd.git</url>
-        <tag>sketches-cmd-0.1.0</tag>
+        <tag>HEAD</tag>
     </scm>
 
     <issueManagement>
