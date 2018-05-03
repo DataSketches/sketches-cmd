@@ -34,6 +34,10 @@ public class VarOptSamplingCL extends SketchCommandLineParser<VarOptItemsSketch<
         .longOpt("num-samples")
         .desc("query number of samples retained")
         .build());
+    options.addOption(Option.builder("T")
+        .longOpt("ids-with-freq")
+        .desc("query identities & frequencies for most frequent items")
+        .build());
     options.addOption(Option.builder("x")
         .longOpt("reg-ex")
         .hasArg()
@@ -141,7 +145,7 @@ public class VarOptSamplingCL extends SketchCommandLineParser<VarOptItemsSketch<
         println("Total Sketch Wt : " + ssSum.getTotalSketchWeight());
       }
 
-      if (!optionChosen) {
+      if (!optionChosen || cl.hasOption("T")) {
         final VarOptItemsSamples<String> samples = sketch.getSketchSamples();
         println("\nItems" + TAB + "Weights");
         for (VarOptItemsSamples<String>.WeightedSample ws : samples) {
