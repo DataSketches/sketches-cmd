@@ -88,7 +88,11 @@ public class CommandLineTest {
     createUniquesFile(15001, 20000, dataFileName2);
 
     println("\nUpdating Theta Sketch 1:");
+    callMain("theta -k 4096 -b -d " + dataFileName1);
+
+    println("\nUpdating Theta Sketch 1:");
     callMain("theta -k 4096 -d " + dataFileName1 + " -o " + serFileName1);
+
 
     println("\nUpdating Theta Sketch 2:");
     callMain("theta -k 4096 -d " + dataFileName2 + " -o " + serFileName2);

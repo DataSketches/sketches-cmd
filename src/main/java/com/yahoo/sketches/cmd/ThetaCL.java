@@ -36,6 +36,10 @@ public class ThetaCL extends SketchCommandLineParser<Sketch> {
           .desc("AnotB: From the first sketch subtract all others. "
           + "If '-d' is specified, it becomes the 'A' sketch.")
           .build());
+      options.addOption(Option.builder("b")
+          .longOpt("bounds")
+          .desc("output the 95% confidence bounds along with the estimate")
+          .build());
    }
 
   @Override
@@ -126,9 +130,16 @@ public class ThetaCL extends SketchCommandLineParser<Sketch> {
     if (sketchList.size() > 0) {
       final Sketch sketch = sketchList.get(sketchList.size() - 1);
       final double est = sketch.getEstimate();
-      final double lb = sketch.getLowerBound(2);
-      final double ub = sketch.getUpperBound(2);
-      System.out.format("%f %f %f" + LS,lb, est, ub);
+      final String s;
+
+      if (cl.hasOption("b")) {
+        final double lb = sketch.getLowerBound(2);
+        final double ub = sketch.getUpperBound(2);
+        s = String.format("%.0f   %.0f   %.0f", lb, est, ub);
+      } else {
+        s = String.format("%.0f", est);
+      }
+      println(s);
     }
   }
 }
